@@ -1,0 +1,39 @@
+.deploy-notice {
+  /* 화면 폭 전체를 쓰되 본문과 같은 좌우 여백에 맞춘다. */
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: var(--space-4);
+  border: 3px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-surface);
+  /* 본문 컨테이너 상단 여백과 겹치지 않게 자체 여백을 준다. */
+  margin-top: var(--space-4);
+  margin-bottom: calc(-1 * var(--space-4));
+}
+
+.deploy-notice__label {
+  margin-bottom: var(--space-2);
+  color: var(--color-danger);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.deploy-notice__body {
+  /* 본문 색을 쓴다. 경고 색(빨강)으로 긴 문장을 쓰면 읽기 부담이 크다. */
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 30rem) {
+  .deploy-notice {
+    margin-left: var(--space-3);
+    margin-right: var(--space-3);
+  }
+}
+
+@media (forced-colors: active) {
+  .deploy-notice {
+    border-color: CanvasText;
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DeployNotice } from './components/DeployNotice';
 import { clearConsent, loadConsent, saveConsent } from './lib/storage';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
 import { ParticipantScreen } from './screens/participant/ParticipantScreen';
@@ -41,6 +42,9 @@ export function App() {
       <a className="skip-link visually-hidden-focusable" href="#main">
         본문으로 건너뛰기
       </a>
+
+      {/* 배포 빌드에서만 렌더링된다. 로컬 개발 중에는 null. */}
+      <DeployNotice />
 
       {consent === null ? (
         <ConsentScreen onComplete={handleConsentComplete} />
