@@ -1,13 +1,12 @@
 /**
  * 로컬 빌드 → gh-pages 브랜치 푸시.
  *
- * 이 저장소가 올라가 있는 GitHub Enterprise Server 인스턴스는 Actions 가
- * 비활성이라(워크플로가 등록조차 되지 않음) CI 로 빌드할 수 없다.
- * 그래서 배포는 로컬에서 빌드해 결과물만 gh-pages 브랜치로 올리는 방식이다.
+ * 로컬에서 빌드해 결과물만 gh-pages 브랜치로 올린다.
  *
  *   npm run deploy
  *
- * 나중에 Actions 가 열리면 .github/workflows/deploy-pages.yml 로 대체할 수 있다.
+ * GitHub Actions 로 옮길 수도 있지만, 배포가 드물고 빌드가 2~3초라
+ * 러너를 띄우는 것보다 이 편이 단순하다.
  *
  * git worktree 를 쓰는 이유: 현재 작업 트리를 건드리지 않고 gh-pages 브랜치를
  * 별도 디렉터리에 체크아웃해 다루기 때문에, 배포 중 소스가 오염되지 않는다.
@@ -123,8 +122,8 @@ try {
 console.log(
   [
     '',
-    '주의: 이 인스턴스의 Pages 빌더가 동작하지 않으면 브랜치를 올려도',
-    '사이트는 "Site not found" 를 반환합니다. README 의 "배포" 절을 참고하세요.',
+    'GitHub Pages 빌드가 30초쯤 뒤 반영됩니다.',
+    'https://smilegatea11y.github.io/game-a11y-fundamental-test/',
     '',
   ].join('\n'),
 );
