@@ -25,7 +25,13 @@ function git(args, options = {}) {
 }
 
 function run(command, args) {
-  execFileSync(command, args, { stdio: 'inherit', shell: process.platform === 'win32' });
+  /*
+   * Windows 에서는 npm 이 npm.cmd 라서 확장자를 붙여야 실행된다.
+   * shell: true 로 우회하면 인자가 이스케이프 없이 이어붙어 Node 가
+   * DEP0190 경고를 낸다. 실행 파일명을 정확히 지정해 shell 을 쓰지 않는다.
+   */
+  const executable = process.platform === 'win32' ? `${command}.cmd` : command;
+  execFileSync(executable, args, { stdio: 'inherit' });
 }
 
 // 1) 커밋되지 않은 변경이 있으면 멈춘다.
