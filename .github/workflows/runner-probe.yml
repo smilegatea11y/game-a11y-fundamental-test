@@ -1,0 +1,28 @@
+# 임시 탐침 워크플로.
+#
+# 목적: 이 GHES 인스턴스에서 (1) Actions 가 실제로 실행되는지,
+#       (2) 어떤 라벨의 러너가 붙는지 확인한다.
+#
+# 외부 액션(actions/checkout 등)을 일부러 쓰지 않는다. GHES 는 github.com 의
+# 액션을 GitHub Connect 로 프록시하지 않으면 해석하지 못하므로, 액션 해석 실패와
+# 러너 부재를 구분하려면 순수 셸 스텝만으로 시험해야 한다.
+#
+# 확인이 끝나면 이 파일은 삭제한다.
+name: runner-probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/runner-probe.yml']
+
+jobs:
+  hosted-label:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ubuntu-latest 라벨로 러너가 붙었습니다. runner=$RUNNER_NAME os=$RUNNER_OS"
+
+  self-hosted-label:
+    runs-on: self-hosted
+    steps:
+      - run: echo "self-hosted 라벨로 러너가 붙었습니다. runner=$RUNNER_NAME os=$RUNNER_OS"
