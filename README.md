@@ -40,7 +40,54 @@ npm approve-scripts esbuild
 | `npm run dev` | 개발 서버 |
 | `npm run typecheck` | 타입 검사 |
 | `npm run build` | 프로덕션 빌드 (`dist/`) |
-| `npm run preview` | 빌드 결과 확인 |
+| `npm run preview` | 빌드 결과 확인 (배포본과 동일 — 테스트 경고 표시됨) |
+| `npm run deploy` | 로컬 빌드 → `gh-pages` 브랜치 푸시 |
+
+## 배포 — 현재 막혀 있음
+
+저장소: <https://github.smilegate.net/hnchoi/game-a11y-fundamental-test>
+
+`gh-pages` 브랜치와 Pages 설정은 **이미 준비돼 있지만, 사이트가 뜨지 않습니다.**
+이 GHES 인스턴스(3.15.9) 쪽 제약 때문이며 저장소 설정으로는 해결할 수 없습니다.
+
+| 확인한 것 | 결과 |
+|---|---|
+| `gh-pages` 브랜치 + `index.html` | 정상 푸시됨 |
+| Pages 설정 (`source: gh-pages /`, `build_type: legacy`) | 정상 등록됨 |
+| Pages 빌드 이력 | **0건** — 빌드를 요청해도 큐에서 처리되지 않음 |
+| 사이트 응답 | `Site not found · GitHub Pages` |
+| GitHub Actions | **비활성** — 워크플로 파일을 푸시해도 등록 0개, 실행 0건 |
+| Pages 비공개 전환 | 불가 — *"Private pages is not enabled for this repository"* |
+
+### 관리자에게 요청할 것
+
+둘 중 하나만 열리면 배포가 됩니다.
+
+1. **Pages 빌드 서비스 활성화** (권장, 추가 작업 없음)
+   이미 설정이 끝나 있어 빌더만 돌면 바로 사이트가 뜹니다.
+2. **Actions 활성화 + self-hosted 러너 배정**
+   이 경우 `scripts/deploy-pages.mjs` 를 워크플로로 옮길 수 있습니다.
+   단, GHES 는 github.com 의 액션(`actions/checkout` 등)을 GitHub Connect 없이는
+   해석하지 못하므로 그 설정도 함께 확인해야 합니다.
+
+### 그때까지의 확인 방법
+
+```bash
+npm run build
+npm run preview
+```
+
+배포본과 동일한 결과물을 로컬에서 볼 수 있습니다.
+
+### Pages 사이트는 비공개로 만들 수 없습니다
+
+저장소는 Private 이지만, 이 인스턴스는 Pages 사이트를 **항상 공개**로만 제공합니다.
+빌더가 켜지는 순간 사이트는 이 GHES 에 접근 가능한 모든 사용자에게 열립니다.
+(인스턴스가 private mode 이므로 최소한 로그인은 필요합니다.)
+
+그래서 배포 빌드에는 `src/components/DeployNotice.tsx` 경고가 항상 표시됩니다 —
+실제 연구가 아니며 입력 정보가 전송·저장되지 않는다는 안내입니다.
+문안이 확정되고 실제 수집을 시작할 때 이 컴포넌트를 제거하세요.
 
 ## 현재 구현 범위
 
