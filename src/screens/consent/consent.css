@@ -1,0 +1,497 @@
+/* 동의 화면 + 공용 폼 요소 스타일 */
+
+.page {
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.page__step {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.page__title {
+  margin-bottom: var(--space-5);
+}
+
+/*
+ * 대비가 낮은(muted) 보조 텍스트는 Medium 으로 굵힌다.
+ * 같은 대비라도 획이 얇으면 저시력 사용자에게 훨씬 읽기 어렵다.
+ * 색을 더 진하게 만드는 대신 굵기로 보강해서, 본문과의 시각적 위계는 유지한다.
+ */
+.section__lead,
+.consent-item__summary,
+.detail-list__row dd,
+.field__hint,
+.radio-group__hint,
+.radio-option__description,
+.guardian__notice,
+.actions__hint,
+.page__version {
+  font-weight: var(--font-weight-medium);
+}
+
+/* --- 안내문 ---------------------------------------------------------------- */
+.notice {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.notice__heading {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.notice__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.notice__list li {
+  font-size: var(--text-sm);
+}
+
+/* --- 진행률 ---------------------------------------------------------------- */
+.progress {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.progress--complete {
+  border-color: var(--color-success);
+  background: var(--color-success-surface);
+}
+
+.progress__text {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.progress--complete .progress__text {
+  color: var(--color-success);
+}
+
+.progress__track {
+  height: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.progress__bar {
+  height: 100%;
+  background: var(--color-accent);
+  transition: inline-size 200ms ease-out;
+}
+
+.progress--complete .progress__bar {
+  background: var(--color-success);
+}
+
+@media (forced-colors: active) {
+  .progress__bar {
+    background: Highlight;
+  }
+}
+
+/* --- 섹션 ----------------------------------------------------------------- */
+.section {
+  margin-bottom: var(--space-6);
+}
+
+.section__heading {
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-border-strong);
+  margin-bottom: var(--space-4);
+}
+
+.section__lead {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 동의 항목 ------------------------------------------------------------- */
+.consent-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.consent-item {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+/* 민감정보 항목은 색만이 아니라 굵은 테두리와 "민감정보" 배지로 구분한다. */
+.consent-item--sensitive {
+  border-width: 2px;
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-accent);
+}
+
+.consent-item__control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* 라벨 전체를 클릭 영역으로 쓴다. 체크박스 자체는 22px 이므로,
+   라벨 높이로 클릭 타겟을 44px 이상 확보한다. */
+.consent-item__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  font-weight: 700;
+}
+
+.consent-item__title {
+  font-size: var(--text-base);
+}
+
+.consent-item__summary {
+  margin-top: var(--space-2);
+  /* 체크박스 너비 + gap 만큼 들여써서 라벨과 정렬을 맞춘다. */
+  padding-left: calc(1.375rem + var(--space-3));
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.consent-item__error {
+  margin-top: var(--space-2);
+  padding-left: calc(1.375rem + var(--space-3));
+}
+
+/* --- 배지 ----------------------------------------------------------------- */
+.badge {
+  display: inline-block;
+  flex: none;
+  padding: 0.125rem var(--space-2);
+  border: 1px solid currentcolor;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge--required {
+  color: var(--color-danger);
+}
+
+.badge--optional {
+  color: var(--color-text-muted);
+}
+
+.badge--sensitive {
+  color: var(--color-accent);
+}
+
+/* --- 자세히 보기 ----------------------------------------------------------- */
+.disclosure {
+  margin-top: var(--space-3);
+  margin-left: calc(1.375rem + var(--space-3));
+}
+
+.disclosure__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  padding: var(--space-2) 0;
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  /* 기본 삼각형 마커를 감추고 직접 그린다 (브라우저별 모양 차이 제거) */
+  list-style: none;
+}
+
+.disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure__summary::marker {
+  content: '';
+}
+
+.disclosure__summary:hover {
+  color: var(--color-accent-hover);
+}
+
+.disclosure__chevron {
+  flex: none;
+  width: 0;
+  height: 0;
+  border-top: 0.3125rem solid transparent;
+  border-bottom: 0.3125rem solid transparent;
+  border-left: 0.4375rem solid currentcolor;
+  transition: transform 150ms ease-out;
+}
+
+.disclosure[open] .disclosure__chevron {
+  transform: rotate(90deg);
+}
+
+.disclosure__panel {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+/* --- 상세 정의 목록 -------------------------------------------------------- */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detail-list__row dt {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.detail-list__row dd {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 폼 필드 -------------------------------------------------------------- */
+.field {
+  margin-bottom: var(--space-4);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.field__required-mark {
+  color: var(--color-danger);
+}
+
+.field__hint {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* 오류 메시지는 입력란 "위"에 둔다. 아래에 두면 모바일 키보드나
+   화면 확대 상태에서 가려져 보이지 않는 경우가 있다. */
+.field__error {
+  margin-bottom: var(--space-2);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+/* --- 라디오 그룹 ----------------------------------------------------------- */
+.radio-group__legend {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.radio-group__hint {
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.radio-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.radio-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.radio-option:has(input:checked) {
+  border-color: var(--color-accent);
+  border-width: 2px;
+  background: var(--color-surface-accent);
+}
+
+.radio-option label {
+  display: flex;
+  align-items: center;
+  min-height: var(--target-min);
+  font-weight: 700;
+}
+
+.radio-option__description {
+  grid-column: 2;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 법정대리인 ------------------------------------------------------------ */
+.guardian {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.guardian__heading {
+  margin-bottom: var(--space-3);
+}
+
+.guardian__notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 오류 요약 ------------------------------------------------------------- */
+.error-summary {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 3px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-surface);
+}
+
+.error-summary__heading {
+  margin-bottom: var(--space-2);
+  color: var(--color-danger);
+}
+
+.error-summary__intro {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.error-summary__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: 1.25em;
+}
+
+.error-summary__list a {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+/* --- 액션 ----------------------------------------------------------------- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.btn {
+  min-height: var(--target-min);
+  padding: var(--space-3) var(--space-5);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn--primary:active {
+  background: var(--color-accent-active);
+}
+
+.btn--secondary {
+  border-color: var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.btn--secondary:hover {
+  background: var(--color-surface);
+}
+
+.actions__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 푸터 ----------------------------------------------------------------- */
+.page__footer {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.page__footer-heading {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+}
+
+.page__version {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- 좁은 화면 / 400% 확대 대응 -------------------------------------------- */
+@media (max-width: 30rem) {
+  .page {
+    padding: var(--space-4) var(--space-3) var(--space-6);
+  }
+
+  .consent-item__summary,
+  .consent-item__error,
+  .disclosure {
+    /* 폭이 좁으면 들여쓰기를 버리고 가로 공간을 확보한다. */
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+}

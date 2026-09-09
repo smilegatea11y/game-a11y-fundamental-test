@@ -1,0 +1,193 @@
+/* 리셋 + 전역 기본값 + 포커스 정책 */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* rem 기준을 브라우저 기본 글자 크기에 맡긴다.
+     사용자가 OS/브라우저에서 글자를 키우면 화면 전체가 함께 커져야 한다. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  /*
+   * 굵기를 명시한다. 값을 비워두면 서체나 브라우저 기본값에 따라
+   * Light 로 렌더링될 수 있고, 저시력 사용자에게는 그게 바로 가독성 저하다.
+   */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  /* 400% 확대 시에도 가로 스크롤이 생기지 않게 (WCAG 1.4.10 Reflow) */
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+}
+
+/*
+ * 제목에 음수 자간을 쓰지 않는다. 큰 글씨를 좁혀서 다듬는 흔한 처리인데,
+ * 저시력 사용자에게는 자소가 붙어 보이는 원인이 된다.
+ */
+h1,
+h2,
+h3 {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-normal);
+}
+
+h1 {
+  font-size: var(--text-2xl);
+}
+
+h2 {
+  font-size: var(--text-xl);
+}
+
+h3 {
+  font-size: var(--text-lg);
+}
+
+a {
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ---------------------------------------------------------------------------
+ * 포커스 정책 — 이 프로젝트에서 `outline: none` 은 금지다.
+ * 마우스 클릭 시의 링만 :focus-visible 로 걸러낸다.
+ * ------------------------------------------------------------------------- */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* :focus-visible 미지원 브라우저 폴백 */
+@supports not selector(:focus-visible) {
+  :focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+/* 프로그램적으로 포커스를 옮기는 컨테이너(h1, 오류 요약)는
+   링을 유지해서 "여기로 이동했다"는 사실이 보이게 한다. */
+[tabindex='-1']:focus {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ---------------------------------------------------------------------------
+ * 폼 컨트롤
+ * 체크박스/라디오는 appearance 를 덮어쓰지 않는다.
+ * 네이티브 렌더링을 유지하면 고대비 모드·OS 테마에서 상태 표시가 깨지지 않는다.
+ * ------------------------------------------------------------------------- */
+input[type='checkbox'],
+input[type='radio'] {
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+input[type='text'],
+input[type='tel'],
+input[type='email'],
+select,
+textarea {
+  width: 100%;
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  /* 폼 컨트롤은 자간을 상속하지 않으므로 명시해야 한다. */
+  letter-spacing: var(--tracking-normal);
+  line-height: 1.5;
+}
+
+input[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+label {
+  cursor: pointer;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  /* 폼 컨트롤은 자간을 상속하지 않으므로 명시해야 한다. */
+  letter-spacing: var(--tracking-normal);
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+ * 사용자 환경 설정 존중
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Windows 고대비 모드 */
+@media (forced-colors: active) {
+  :focus-visible,
+  [tabindex='-1']:focus {
+    outline-color: Highlight;
+  }
+
+  .btn--primary {
+    border: 2px solid ButtonText;
+  }
+}
