@@ -53,12 +53,23 @@ const worktree = mkdtempSync(join(tmpdir(), 'gh-pages-'));
 // mkdtemp 가 만든 빈 디렉터리는 worktree add 가 거부하므로 지우고 넘긴다.
 rmSync(worktree, { recursive: true, force: true });
 
+// 지난 실행이 비정상 종료해 남은 worktree 등록 정보를 정리한다.
+git(['worktree', 'prune']);
+
+/*
+ * worktree 를 detached HEAD 로 만든다.
+ *
+ * 로컬 gh-pages 브랜치를 체크아웃하면, 그 브랜치가 다른 worktree 에 이미
+ * 체크아웃돼 있을 때 git 이 거부한다("refusing to fetch into branch ...
+ * checked out at ..."). detached 로 두고 마지막에 HEAD 를 원격 브랜치로
+ * 푸시하면 로컬 브랜치 ref 를 아예 쓰지 않으므로 그 충돌이 발생하지 않는다.
+ */
 const remoteHasBranch = git(['ls-remote', '--heads', 'origin', BRANCH]).length > 0;
 if (remoteHasBranch) {
-  git(['fetch', 'origin', `${BRANCH}:${BRANCH}`, '--force']);
-  git(['worktree', 'add', worktree, BRANCH]);
+  git(['fetch', 'origin', BRANCH]);
+  git(['worktree', 'add', '--detach', worktree, `origin/${BRANCH}`]);
 } else {
-  git(['worktree', 'add', '--orphan', '-b', BRANCH, worktree]);
+  git(['worktree', 'add', '--orphan', '-b', `${BRANCH}-tmp-${Date.now()}`, worktree]);
 }
 
 try {
@@ -78,7 +89,8 @@ try {
     console.log('변경 사항이 없습니다. 푸시를 건너뜁니다.');
   } else {
     git(['commit', '-m', `Deploy: ${sourceBranch} @ ${sourceSha}`], { cwd: worktree });
-    git(['push', 'origin', BRANCH], { cwd: worktree });
+    // HEAD 를 원격 브랜치로 직접 푸시한다. 로컬 브랜치 ref 를 쓰지 않는다.
+    git(['push', 'origin', `HEAD:refs/heads/${BRANCH}`], { cwd: worktree });
     console.log(`\n${BRANCH} 브랜치에 배포했습니다. (source ${sourceSha})`);
   }
 } finally {
