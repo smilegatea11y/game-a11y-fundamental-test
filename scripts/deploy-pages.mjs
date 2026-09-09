@@ -24,14 +24,31 @@ function git(args, options = {}) {
   return execFileSync('git', args, { encoding: 'utf8', stdio: 'pipe', ...options }).trim();
 }
 
-function run(command, args) {
-  /*
-   * Windows 에서는 npm 이 npm.cmd 라서 확장자를 붙여야 실행된다.
-   * shell: true 로 우회하면 인자가 이스케이프 없이 이어붙어 Node 가
-   * DEP0190 경고를 낸다. 실행 파일명을 정확히 지정해 shell 을 쓰지 않는다.
-   */
-  const executable = process.platform === 'win32' ? `${command}.cmd` : command;
-  execFileSync(executable, args, { stdio: 'inherit' });
+/**
+ * 빌드를 실행한다.
+ *
+ * npm 을 거치지 않고 vite 진입점을 현재 Node 로 직접 실행한다.
+ * Windows 의 npm 은 npm.cmd 이고, Node 18 이후 보안 제약으로 .cmd/.bat 은
+ * shell: true 없이 실행할 수 없다. 그런데 shell: true 로 인자를 넘기면
+ * 이스케이프 없이 이어붙어 DEP0190 경고가 난다. 양쪽을 다 피하려면
+ * 스크립트 파일을 직접 지목하는 편이 낫고, PATH 에 npm 이 없어도 동작한다.
+ */
+function runBuild() {
+  // package.json 의 build 스크립트와 동일하게 타입 검사를 먼저 통과시킨다.
+  // 검사를 건너뛰면 타입 오류가 있는 코드가 그대로 배포된다.
+  const steps = [
+    { name: '타입 검사', bin: join('node_modules', 'typescript', 'bin', 'tsc'), args: ['-b'] },
+    { name: '번들 빌드', bin: join('node_modules', 'vite', 'bin', 'vite.js'), args: ['build'] },
+  ];
+
+  for (const step of steps) {
+    if (!existsSync(step.bin)) {
+      console.error(`${step.name} 실행 파일을 찾을 수 없습니다: ${step.bin}`);
+      console.error('먼저 npm install 을 실행하세요.');
+      process.exit(1);
+    }
+    execFileSync(process.execPath, [step.bin, ...step.args], { stdio: 'inherit' });
+  }
 }
 
 // 1) 커밋되지 않은 변경이 있으면 멈춘다.
@@ -47,7 +64,7 @@ const sourceSha = git(['rev-parse', '--short', 'HEAD']);
 const sourceBranch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
 
 console.log(`\n[1/4] 빌드 (${sourceBranch} @ ${sourceSha})`);
-run('npm', ['run', 'build']);
+runBuild();
 
 if (!existsSync(DIST) || readdirSync(DIST).length === 0) {
   console.error(`빌드 산출물이 없습니다: ${DIST}/`);
