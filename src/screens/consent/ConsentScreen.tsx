@@ -6,6 +6,7 @@ import {
   CONSENT_NOTICE,
   CONSENT_VERSION,
   CONTACT_INFO,
+  DATA_FLOW_NOTICE,
   OPTIONAL_ITEMS,
   REQUIRED_ITEMS,
 } from '../../data/consentItems';
@@ -103,12 +104,30 @@ export function ConsentScreen({ onComplete }: ConsentScreenProps) {
             <strong>{CONSENT_NOTICE.refusal}</strong>
           </li>
           <li>
-            <strong>{CONSENT_NOTICE.withdrawal}</strong>
+            <strong>{CONSENT_NOTICE.withdrawalBeforeSubmit}</strong>
+          </li>
+          <li>
+            <strong>{CONSENT_NOTICE.withdrawalAfterSubmit}</strong>
           </li>
           <li>
             <strong>{CONSENT_NOTICE.reward}</strong>
           </li>
           <li>{CONSENT_NOTICE.optionalNotice}</li>
+        </ul>
+      </section>
+
+      {/*
+       * 데이터가 서버로 가지 않는다는 사실은 참여자의 판단에 직접 영향을 주므로
+       * "자세히 보기" 안에 묻지 않고 항목 목록 앞에 펼쳐서 보여준다.
+       */}
+      <section className="notice notice--flow" aria-labelledby="flow-heading">
+        <h2 className="notice__heading" id="flow-heading">
+          입력한 정보가 어떻게 전달되는지
+        </h2>
+        <ul className="notice__list">
+          {DATA_FLOW_NOTICE.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
         </ul>
       </section>
 
