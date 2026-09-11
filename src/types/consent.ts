@@ -12,7 +12,7 @@ export type ConsentAnswers = Record<ConsentItemId, boolean>;
  * 동의 기록. "언제 / 어떤 버전의 문안에 / 무엇을 동의했는지"가 남아야 하므로
  * consentVersion 과 agreedAt 은 생략할 수 없다.
  * 문안이 개정되면 CONSENT_VERSION 을 올리고, 저장된 구버전 기록은 무효로 처리해
- * 참여자에게 다시 동의를 받는다. (lib/storage.ts 참고)
+ * 참여자에게 다시 동의를 받는다. (lib/sessionStore.ts 참고)
  */
 export interface ConsentRecord {
   consentVersion: string;

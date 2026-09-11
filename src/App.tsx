@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import { clearConsent, loadConsent, saveConsent } from './lib/storage';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
 import { ParticipantScreen } from './screens/participant/ParticipantScreen';
-import type { ConsentRecord } from './types/consent';
+import { useSession } from './state/useSession';
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -14,27 +12,15 @@ import type { ConsentRecord } from './types/consent';
  *  탭 이동, 스크린리더 탐색, 브라우저 자동완성 어디에도 걸리지 않는다.
  *
  *  주의: 이 게이트는 UX·법적 절차 보장용이고 보안 경계가 아니다.
- *  서버/구글시트 전송을 붙이는 단계에서, 유효한 동의 기록이 없는 제출은
- *  서버에서도 거부해야 한다.
+ *  서버/외부 전송을 붙이는 단계에서, 유효한 동의 기록이 없는 제출은
+ *  받는 쪽에서도 거부해야 한다.
+ *
+ *  진행 상황은 useSession 이 값이 바뀔 때마다 브라우저에 기록한다.
+ *  CSV 는 마지막 단계에서 그 초안을 읽어 만든다. (lib/sessionStore.ts)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export function App() {
-  /*
-   * 새로고침해도 동의 상태를 유지한다. 단, 저장된 기록이 현재 문안 버전과
-   * 다르거나 형식이 깨졌으면 loadConsent 가 null 을 돌려주므로
-   * 자동으로 동의 화면부터 다시 시작한다. (lib/storage.ts 참고)
-   */
-  const [consent, setConsent] = useState<ConsentRecord | null>(() => loadConsent());
-
-  const handleConsentComplete = (record: ConsentRecord) => {
-    saveConsent(record);
-    setConsent(record);
-  };
-
-  const handleReset = () => {
-    clearConsent();
-    setConsent(null);
-  };
+  const session = useSession();
 
   return (
     <>
@@ -42,10 +28,13 @@ export function App() {
         본문으로 건너뛰기
       </a>
 
-      {consent === null ? (
-        <ConsentScreen onComplete={handleConsentComplete} />
+      {session.consent === null ? (
+        <ConsentScreen
+          onComplete={session.grantConsent}
+          storageAvailable={session.storageAvailable}
+        />
       ) : (
-        <ParticipantScreen consent={consent} onReset={handleReset} />
+        <ParticipantScreen session={session} />
       )}
     </>
   );

@@ -91,6 +91,36 @@
 }
 
 
+/* --- 저장 상태 ------------------------------------------------------------- */
+/*
+ * 색만으로 구분하지 않는다. 아이콘 문자(✓ / ⚠)와 문구가 함께 들어간다.
+ * 비어 있는 상태(idle)에서는 여백을 만들지 않아 화면이 흔들리지 않게 한다.
+ */
+.save-status {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.save-status:not(:empty) {
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.save-status--saved:not(:empty) {
+  border-color: var(--color-success);
+  background: var(--color-success-surface);
+  color: var(--color-success);
+}
+
+.save-status--warn:not(:empty),
+.save-status--error:not(:empty) {
+  border-color: var(--color-danger);
+  background: var(--color-danger-surface);
+  color: var(--color-danger);
+}
+
 /* --- 섹션 ----------------------------------------------------------------- */
 .section {
   margin-bottom: var(--space-6);

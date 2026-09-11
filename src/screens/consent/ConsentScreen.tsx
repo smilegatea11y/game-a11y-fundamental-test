@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
+import { SaveStatus } from '../../components/a11y/SaveStatus';
 import {
   CONSENT_NOTICE,
   CONSENT_VERSION,
@@ -17,9 +18,14 @@ import './consent.css';
 
 interface ConsentScreenProps {
   onComplete: (record: ConsentRecord) => void;
+  /**
+   * 이 브라우저에서 진행 상황을 저장할 수 있는지.
+   * false 면 시작 전에 알려야 한다 — 측정을 다 끝낸 뒤에 유실을 알게 되면 안 된다.
+   */
+  storageAvailable: boolean;
 }
 
-export function ConsentScreen({ onComplete }: ConsentScreenProps) {
+export function ConsentScreen({ onComplete, storageAvailable }: ConsentScreenProps) {
   const headingRef = useScreenSetup('개인정보 수집·이용 동의', false);
   const form = useConsentForm();
   const errorSummaryRef = useRef<HTMLDivElement>(null);
@@ -80,12 +86,6 @@ export function ConsentScreen({ onComplete }: ConsentScreenProps) {
           <li>
             <strong>{CONSENT_NOTICE.refusal}</strong>
           </li>
-          <li>
-            <strong>{CONSENT_NOTICE.withdrawalBeforeSubmit}</strong>
-          </li>
-          <li>
-            <strong>{CONSENT_NOTICE.withdrawalAfterSubmit}</strong>
-          </li>
         </ul>
       </section>
 
@@ -95,7 +95,7 @@ export function ConsentScreen({ onComplete }: ConsentScreenProps) {
        */}
       <section className="notice notice--flow" aria-labelledby="flow-heading">
         <h2 className="notice__heading" id="flow-heading">
-          입력한 정보가 어떻게 전달되는지
+          입력한 정보의 기록과 전달
         </h2>
         <ul className="notice__list">
           {DATA_FLOW_NOTICE.map((line) => (
@@ -103,6 +103,11 @@ export function ConsentScreen({ onComplete }: ConsentScreenProps) {
           ))}
         </ul>
       </section>
+
+      {/* 저장이 불가능한 환경이면 동의 전에 알린다. */}
+      {!storageAvailable ? (
+        <SaveStatus state="unavailable" error={null} />
+      ) : null}
 
       <form onSubmit={handleSubmit} noValidate>
         <ErrorSummary
