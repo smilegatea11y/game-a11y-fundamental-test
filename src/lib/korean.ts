@@ -18,3 +18,17 @@ export function withObjectParticle(word: string): string {
   const hasFinalConsonant = (code - 0xac00) % 28 !== 0;
   return `${word}${hasFinalConsonant ? '을' : '를'}`;
 }
+
+/**
+ * 받침 유무에 따라 주격 조사를 고른다. ("손떨림이" / "터널 시야가")
+ *
+ * 동적으로 끼워 넣는 라벨에 조사를 손으로 붙이면, 나중에 받침 없는 항목이
+ * 추가될 때 조용히 틀린다. 장애 세부 양상 라벨처럼 목록이 늘어나는 곳에 쓴다.
+ */
+export function withSubjectParticle(word: string): string {
+  const code = word.charCodeAt(word.length - 1);
+  const isHangulSyllable = code >= 0xac00 && code <= 0xd7a3;
+  if (!isHangulSyllable) return `${word}이`;
+  const hasFinalConsonant = (code - 0xac00) % 28 !== 0;
+  return `${word}${hasFinalConsonant ? '이' : '가'}`;
+}

@@ -1,6 +1,7 @@
 import { SaveStatus } from '../components/a11y/SaveStatus';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { SUBMISSION_INFO } from '../data/consentItems';
+import { TYPE_LABEL } from '../data/disabilityFields';
 import { buildResultFilename } from '../lib/csv';
 import { STEP_LABEL, STEP_ORDER } from '../lib/sessionStore';
 import type { SessionStep } from '../lib/sessionStore';
@@ -37,6 +38,8 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
 
   const stepNumber = STEP_ORDER.indexOf(step) + 1;
   const basicInfo = draft?.basicInfo ?? null;
+  const disability = draft?.disability ?? null;
+  const deviceSpec = draft?.deviceSpec ?? null;
 
   return (
     <main className="page" id="main">
@@ -65,40 +68,103 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
         </ul>
       </section>
 
-      {basicInfo !== null ? (
-        <section className="section" aria-labelledby="saved-basic-heading">
-          <h2 className="section__heading" id="saved-basic-heading">
-            저장된 기본정보
+      {/*
+        * 지금까지 저장된 내용 요약. 개발·검증용 표시이며 실제 화면이 모두
+        * 붙으면 제거한다. 값 자체보다 "어디까지 저장됐는지"를 보기 위한 것이라
+        * 민감한 자유 서술(장애 주관식)은 길이만 표시하고 내용은 싣지 않는다.
+        */}
+      {(basicInfo !== null || disability !== null || deviceSpec !== null) ? (
+        <section className="section" aria-labelledby="saved-heading">
+          <h2 className="section__heading" id="saved-heading">
+            저장된 입력 내용
           </h2>
           <dl className="detail-list">
-            <div className="detail-list__row">
-              <dt>고유 ID</dt>
-              <dd>
-                <code>{basicInfo.participantId || '(미입력)'}</code>
-              </dd>
-            </div>
-            <div className="detail-list__row">
-              <dt>선호 장르</dt>
-              <dd>{basicInfo.genres.length > 0 ? basicInfo.genres.join(', ') : '(미입력)'}</dd>
-            </div>
-            <div className="detail-list__row">
-              <dt>보조기기 사용</dt>
-              <dd>
-                {basicInfo.dailyAssistiveDeviceUse === 'yes'
-                  ? `예${basicInfo.dailyAssistiveDeviceNames ? ` — ${basicInfo.dailyAssistiveDeviceNames}` : ''}`
-                  : basicInfo.dailyAssistiveDeviceUse === 'no'
-                    ? '아니요'
-                    : '(미입력)'}
-              </dd>
-            </div>
-            <div className="detail-list__row">
-              <dt>접근성 기능</dt>
-              <dd>
-                {basicInfo.accessibilityFeatures.length > 0
-                  ? basicInfo.accessibilityFeatures.join(', ')
-                  : '(미입력)'}
-              </dd>
-            </div>
+            {basicInfo !== null ? (
+              <>
+                <div className="detail-list__row">
+                  <dt>고유 ID</dt>
+                  <dd>
+                    <code>{basicInfo.participantId || '(미입력)'}</code>
+                  </dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>선호 장르</dt>
+                  <dd>{basicInfo.genres.length > 0 ? basicInfo.genres.join(', ') : '(미입력)'}</dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>평소 보조기기</dt>
+                  <dd>
+                    {basicInfo.dailyAssistiveDeviceUse === 'yes'
+                      ? `사용 — ${basicInfo.dailyAssistiveDeviceNames || '명칭 미입력'}`
+                      : basicInfo.dailyAssistiveDeviceUse === 'no'
+                        ? '사용하지 않음'
+                        : '(미입력)'}
+                  </dd>
+                </div>
+              </>
+            ) : null}
+
+            {disability !== null ? (
+              <>
+                <div className="detail-list__row">
+                  <dt>장애 유형</dt>
+                  <dd>
+                    {disability.types.length > 0
+                      ? disability.types.map((t) => TYPE_LABEL[t]).join(', ')
+                      : '(미입력)'}
+                  </dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>세부 양상</dt>
+                  <dd>
+                    {Object.values(disability.aspectsByGroup).flat().length > 0
+                      ? `${Object.values(disability.aspectsByGroup).flat().length}건 선택`
+                      : '(미입력)'}
+                  </dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>주관식 설명</dt>
+                  <dd>
+                    {disability.narrative.length > 0
+                      ? `${disability.narrative.length}자 입력됨`
+                      : '(비워둠 — 선택 항목)'}
+                  </dd>
+                </div>
+              </>
+            ) : null}
+
+            {deviceSpec !== null ? (
+              <>
+                <div className="detail-list__row">
+                  <dt>주 입력장치</dt>
+                  <dd>
+                    {deviceSpec.inputDevices.length > 0
+                      ? deviceSpec.inputDevices.join(', ')
+                      : '(미입력)'}
+                  </dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>게임용 보조기기</dt>
+                  <dd>
+                    {deviceSpec.gameAssistiveUse === 'gameSpecific'
+                      ? `게임 전용 — ${deviceSpec.gameAssistiveNames || '명칭 미입력'}`
+                      : deviceSpec.gameAssistiveUse === 'sameAsDaily'
+                        ? '평소 쓰는 것과 동일'
+                        : deviceSpec.gameAssistiveUse === 'none'
+                          ? '사용하지 않음'
+                          : '(미입력)'}
+                  </dd>
+                </div>
+                <div className="detail-list__row">
+                  <dt>그 외 게임 기기</dt>
+                  <dd>
+                    {deviceSpec.extraDevices.length > 0
+                      ? deviceSpec.extraDevices.map((d) => d.modelName).join(', ')
+                      : '(없음)'}
+                  </dd>
+                </div>
+              </>
+            ) : null}
           </dl>
         </section>
       ) : null}

@@ -12,6 +12,14 @@
 
 export type ThemePreference = 'system' | 'dark' | 'light';
 
+/**
+ * 저장 키.
+ *
+ * 주의: index.html 의 선반영 스크립트가 같은 문자열을 하드코딩하고 있다.
+ * 그 스크립트는 React 가 마운트되기 전에 실행돼야 해서 이 모듈을 import 할 수
+ * 없다. 한쪽만 바꾸면 첫 페인트에 테마가 적용되지 않고 화면이 번쩍이는데,
+ * 오류가 나지 않아 알아채기 어렵다. 값을 바꿀 때는 index.html 도 함께 고칠 것.
+ */
 export const THEME_STORAGE_KEY = 'gaft.theme';
 
 export const THEME_OPTIONS: ReadonlyArray<{

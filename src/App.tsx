@@ -38,6 +38,11 @@ export function App() {
     }
 
     switch (step) {
+      /*
+       * 동의는 끝났는데 저장된 단계가 'consent' 인 경우(구버전 초안, 수동 편집 등)
+       * 자리표시 화면에 갇히지 않게 기본정보로 보낸다.
+       */
+      case 'consent':
       case 'basicInfo':
         return (
           <BasicInfoScreen session={session} onComplete={() => session.enterStep('disability')} />
@@ -48,7 +53,7 @@ export function App() {
         return <DeviceSpecScreen session={session} onComplete={() => session.enterStep('tests')} />;
       // 아직 만들지 않은 단계는 공용 자리표시 화면이 받는다.
       default:
-        return <PlaceholderScreen step={step === 'consent' ? 'basicInfo' : step} session={session} />;
+        return <PlaceholderScreen step={step} session={session} />;
     }
   };
 

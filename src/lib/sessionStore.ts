@@ -1,4 +1,4 @@
-import { CONSENT_VERSION } from '../data/consentItems';
+import { CONSENT_VERSION, REQUIRED_ITEM_IDS } from '../data/consentItems';
 import type { BasicInfo } from '../types/basicInfo';
 import type { DeviceSpec } from '../types/deviceSpec';
 import type { DisabilityInfo } from '../types/disability';
@@ -178,13 +178,23 @@ function isValidDraft(value: unknown): value is SessionDraft {
   if (!Array.isArray(draft.log)) return false;
 
   /*
-   * 동의 기록이 있다면 현재 문안 버전과 같아야 한다.
-   * 문안이 개정되면 이전 동의는 무효이므로 초안 전체를 버리고 재동의를 받는다.
-   * 부분적으로 살려두면 "구버전 문안에 동의한 사람의 데이터"가 섞인다.
+   * 동의 기록이 있다면 아래 두 조건을 모두 만족해야 한다.
+   *
+   *  1. 현재 문안 버전과 같아야 한다. 문안이 개정되면 이전 동의는 무효이므로
+   *     초안 전체를 버리고 재동의를 받는다. 부분적으로 살려두면
+   *     "구버전 문안에 동의한 사람의 데이터"가 섞인다.
+   *  2. 필수 항목이 모두 true 여야 한다.
+   *     이 검사가 빠져 있으면 items 가 전부 false 인 기록으로도 동의 게이트를
+   *     통과해 개인정보 입력 화면에 도달한다. storage.ts 를 이 파일로 합칠 때
+   *     빠뜨렸던 검사이고, 실제로 우회가 재현됐다.
    */
   if (draft.consent !== null) {
     if (typeof draft.consent !== 'object' || draft.consent === null) return false;
     if (draft.consent.consentVersion !== CONSENT_VERSION) return false;
+
+    const items = draft.consent.items;
+    if (typeof items !== 'object' || items === null) return false;
+    if (!REQUIRED_ITEM_IDS.every((id) => items[id] === true)) return false;
   }
 
   return true;

@@ -1,3 +1,4 @@
+import { withSubjectParticle } from '../lib/korean';
 import type { FieldOption } from '../components/ui/OptionGroup';
 import type {
   AspectGroup,
@@ -276,7 +277,9 @@ export const DISABILITY_COPY = {
     aspectMissing: (groupTitle: string) =>
       `${groupTitle}에서 해당되는 항목을 하나 이상 선택해 주세요. 맞는 것이 없으면 "기타 (직접 입력)"을 골라주세요.`,
     otherMissing: (groupTitle: string) => `${groupTitle}의 "기타" 내용을 입력해 주세요.`,
-    sideMissing: (aspectLabel: string) => `"${aspectLabel}"이 어느 쪽인지 선택해 주세요.`,
+    // 조사를 손으로 붙이지 않는다. 받침 없는 라벨이 추가되면 조용히 틀린다.
+    sideMissing: (aspectLabel: string) =>
+      `"${aspectLabel}"${withSubjectParticle(aspectLabel).slice(aspectLabel.length)} 어느 쪽인지 선택해 주세요.`,
   },
 
   step3: {
