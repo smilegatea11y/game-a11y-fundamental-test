@@ -131,6 +131,17 @@
   color: var(--color-emphasis);
 }
 
+/* 3단계 주관식의 예시 문장 — 항상 보이게 두는 안내 박스 */
+.notice--examples {
+  border-color: var(--color-success);
+  background: var(--color-success-surface);
+}
+
+.notice--examples .notice__list li {
+  /* 예시임이 드러나게 인용 형태로 둔다. */
+  font-style: normal;
+}
+
 /* --- 저장 상태 ------------------------------------------------------------- */
 /*
  * 색만으로 구분하지 않는다. 아이콘 문자(체크/경고)와 문구가 함께 들어간다.
@@ -504,6 +515,21 @@ code {
 }
 
 .radio-option__revealed .field {
+  margin-bottom: 0;
+}
+
+/* 조건부로 노출된 중첩 그룹(장애 정도, 좌우 방향)은 아래 여백을 없앤다. */
+.radio-option__revealed .radio-group {
+  margin-bottom: 0;
+}
+
+/* 중첩 그룹의 legend 는 한 단계 작게 — 상위 질문과 위계가 드러나야 한다. */
+.radio-option__revealed .radio-group__legend {
+  font-size: var(--text-sm);
+}
+
+/* 접힌 그룹 안의 OptionGroup 도 아래 여백을 없앤다. */
+.disclosure__panel .radio-group {
   margin-bottom: 0;
 }
 

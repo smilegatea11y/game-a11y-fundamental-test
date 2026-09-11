@@ -24,19 +24,12 @@ import type {
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-export interface FieldOption<T extends string> {
-  value: T;
-  label: string;
-  /** 선택 시 자유 입력란을 노출할지 */
-  revealsInput?: boolean;
-  /** 다중선택에서 다른 값과 함께 고를 수 없는 항목 */
-  exclusive?: boolean;
-}
+import type { FieldOption } from '../components/ui/OptionGroup';
 
 export const GENDER_OPTIONS: readonly FieldOption<Gender>[] = [
   { value: 'male', label: '남성' },
   { value: 'female', label: '여성' },
-  { value: 'selfDescribed', label: '직접 입력', revealsInput: true },
+  { value: 'selfDescribed', label: '직접 입력', revealsDetail: true },
   { value: 'undisclosed', label: '밝히고 싶지 않음' },
 ];
 
@@ -52,7 +45,7 @@ export const AGE_BRACKET_OPTIONS: readonly FieldOption<AgeBracket>[] = [
 export const ENROLLMENT_PATH_OPTIONS: readonly FieldOption<EnrollmentPath>[] = [
   { value: 'panel', label: '접근성 패널 프로그램' },
   { value: 'ally', label: '스마일 플레이 앨라이 프로그램' },
-  { value: 'other', label: '기타', revealsInput: true },
+  { value: 'other', label: '기타', revealsDetail: true },
 ];
 
 /** ID 의 경로코드와 참여 경로 선택의 대응. 불일치 경고에 쓴다. */
@@ -77,7 +70,7 @@ export const GENRE_OPTIONS: readonly FieldOption<Genre>[] = [
   { value: 'rhythm', label: '리듬게임' },
   { value: 'puzzle', label: '퍼즐' },
   { value: 'strategy', label: '전략/시뮬레이션' },
-  { value: 'other', label: '기타', revealsInput: true },
+  { value: 'other', label: '기타', revealsDetail: true },
 ];
 
 export const WEEKLY_PLAYTIME_OPTIONS: readonly FieldOption<WeeklyPlaytime>[] = [
@@ -88,7 +81,7 @@ export const WEEKLY_PLAYTIME_OPTIONS: readonly FieldOption<WeeklyPlaytime>[] = [
 ];
 
 export const ASSISTIVE_DEVICE_OPTIONS: readonly FieldOption<AssistiveDeviceUse>[] = [
-  { value: 'yes', label: '예', revealsInput: true },
+  { value: 'yes', label: '예', revealsDetail: true },
   { value: 'no', label: '아니요' },
 ];
 

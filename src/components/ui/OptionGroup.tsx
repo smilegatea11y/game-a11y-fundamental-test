@@ -1,5 +1,20 @@
 import type { ReactNode } from 'react';
-import type { FieldOption } from '../../data/basicInfoFields';
+/**
+ * 선택지 하나.
+ *
+ * basicInfo 전용이 아니라 폼 화면 전체가 쓰므로 컴포넌트와 같은 곳에 둔다.
+ */
+export interface FieldOption<T extends string> {
+  value: T;
+  label: string;
+  /**
+   * 선택 시 그 자리에 딸린 내용을 노출할지.
+   * 자유 텍스트 입력일 수도 있고 인라인 라디오(장애 정도, 좌우 방향)일 수도 있다.
+   */
+  revealsDetail?: boolean;
+  /** 다중선택에서 다른 값과 함께 고를 수 없는 항목 */
+  exclusive?: boolean;
+}
 
 interface OptionGroupProps<T extends string> {
   /** 'radio' = 단일 선택, 'checkbox' = 다중 선택 */
@@ -16,7 +31,7 @@ interface OptionGroupProps<T extends string> {
   selected: readonly T[];
   onToggle: (value: T, checked: boolean) => void;
   /**
-   * revealsInput 이 붙은 선택지가 선택됐을 때 그 선택지 바로 아래에 렌더할 내용.
+   * revealsDetail 이 붙은 선택지가 선택됐을 때 그 선택지 바로 아래에 렌더할 내용.
    * 화면이 자유 입력란을 넘겨준다.
    */
   renderRevealed?: (value: T) => ReactNode;
@@ -93,7 +108,7 @@ export function OptionGroup<T extends string>({
         {options.map((option) => {
           const id = `${groupId}-${option.value}`;
           const isSelected = selected.includes(option.value);
-          const showRevealed = Boolean(option.revealsInput) && isSelected && renderRevealed;
+          const showRevealed = Boolean(option.revealsDetail) && isSelected && renderRevealed;
 
           return (
             <div className="radio-option" key={option.value}>

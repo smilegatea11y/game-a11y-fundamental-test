@@ -1,5 +1,6 @@
 import { CONSENT_VERSION } from '../data/consentItems';
 import type { BasicInfo } from '../types/basicInfo';
+import type { DisabilityInfo } from '../types/disability';
 import type { ConsentRecord } from '../types/consent';
 
 /**
@@ -34,7 +35,7 @@ const LEGACY_KEYS = ['gaft.consent'];
  * 다시 시작한다. 다음 화면(기본정보 등)의 필드를 SessionDraft 에 추가할 때
  * 함께 올릴 것.
  */
-export const SESSION_SCHEMA_VERSION = 2;
+export const SESSION_SCHEMA_VERSION = 3;
 
 /** 로그가 무한히 커지지 않게 제한한다. 테스트 단계에서 항목이 빠르게 늘어난다. */
 const MAX_LOG_ENTRIES = 400;
@@ -99,6 +100,8 @@ export interface SessionDraft {
   consent: ConsentRecord | null;
   /** 기본정보 (SYSTEM_SPEC 3-2). 입력 중에도 계속 갱신된다. */
   basicInfo: BasicInfo | null;
+  /** 장애 정보 (SYSTEM_SPEC 3-3). 입력 중에도 계속 갱신된다. */
+  disability: DisabilityInfo | null;
   log: SessionLogEntry[];
 }
 
@@ -239,6 +242,7 @@ export function startSession(): { draft: SessionDraft; write: WriteResult } {
     currentStep: 'consent',
     consent: null,
     basicInfo: null,
+    disability: null,
     log: [{ at, type: 'session-started' }],
   };
   return { draft, write: persist(draft) };

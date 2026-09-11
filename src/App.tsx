@@ -1,5 +1,6 @@
 import { BasicInfoScreen } from './screens/basicInfo/BasicInfoScreen';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
+import { DisabilityScreen } from './screens/disability/DisabilityScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { useSession } from './state/useSession';
 
@@ -40,6 +41,8 @@ export function App() {
         return (
           <BasicInfoScreen session={session} onComplete={() => session.enterStep('disability')} />
         );
+      case 'disability':
+        return <DisabilityScreen session={session} onComplete={() => session.enterStep('device')} />;
       // 아직 만들지 않은 단계는 공용 자리표시 화면이 받는다.
       default:
         return <PlaceholderScreen step={step === 'consent' ? 'basicInfo' : step} session={session} />;
