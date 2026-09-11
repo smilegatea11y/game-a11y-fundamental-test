@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
   CONSENT_NOTICE,
   CONSENT_VERSION,
@@ -75,6 +76,9 @@ export function ConsentScreen({ onComplete, storageAvailable }: ConsentScreenPro
       <h1 className="page__title" ref={headingRef} tabIndex={-1}>
         개인정보 수집·이용 동의
       </h1>
+
+      {/* 읽기 시작 전에 바꿀 수 있어야 하므로 본문 맨 앞에 둔다. */}
+      <ThemeToggle />
 
       <section className="notice" aria-labelledby="notice-heading">
         <h2 className="notice__heading" id="notice-heading">

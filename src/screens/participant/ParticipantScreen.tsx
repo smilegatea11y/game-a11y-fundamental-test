@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { CONSENT_ITEMS, SUBMISSION_INFO } from '../../data/consentItems';
 import { buildResultFilename } from '../../lib/csv';
 import { useScreenSetup } from '../../lib/useScreenSetup';
@@ -58,6 +59,8 @@ export function ParticipantScreen({ session }: ParticipantScreenProps) {
       <h1 className="page__title" ref={headingRef} tabIndex={-1}>
         참여자 정보 입력
       </h1>
+
+      <ThemeToggle />
 
       <SaveStatus state={saveState} error={saveError} />
 

@@ -8,6 +8,27 @@
       name="description"
       content="장애인 게이머의 게임 플레이 기초 역량 측정 연구 참여를 위한 개인정보 수집·이용 동의 절차입니다."
     />
+    <script>
+      /*
+       * 저장된 화면 밝기 설정을 React 마운트 전에 반영한다.
+       *
+       * 이게 없으면 "밝은 화면"을 고른 사용자에게 어두운 화면이 한 프레임
+       * 번쩍인다. 빛 번짐에 취약해서 밝은 화면을 고른 사람에게 그 번쩍임은
+       * 정확히 피하려던 것이다.
+       *
+       * 어떤 예외도 화면 렌더링을 막지 않게 전체를 try 로 감싼다.
+       * 'system' 이거나 값이 없으면 속성을 두지 않아 CSS 의
+       * prefers-color-scheme 가 판단하게 맡긴다.
+       */
+      try {
+        var pref = localStorage.getItem('gaft.theme');
+        if (pref === 'dark' || pref === 'light') {
+          document.documentElement.setAttribute('data-theme', pref);
+        }
+      } catch (e) {
+        /* localStorage 를 쓸 수 없는 환경 — 기기 설정을 따른다. */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

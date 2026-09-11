@@ -2,46 +2,36 @@
  * 디자인 토큰 — 셸(Shell) 화면 전용.
  *
  * 저시력 사용자 시인성이 스크린리더와 동등한 우선순위다 (SYSTEM_SPEC.md 2절).
- * 그래서 이 파일의 값은 취향이 아니라 기준을 만족시키기 위한 값이다.
+ * 이 파일의 값은 취향이 아니라 기준을 만족시키기 위한 값이다.
  *
- *  - 색 대비: 본문 텍스트는 AA(4.5:1)를 최소선으로 하고 AAA(7:1)를 지향한다.
- *            아래 주석의 대비비는 브라우저에서 실측한 값이다.
- *            값을 바꾸면 반드시 다시 측정해서 주석을 갱신할 것.
- *  - 글자 크기: 본문 20px, 보조 텍스트도 18px 이상. 16px 미만은 쓰지 않는다.
- *              모두 rem 이므로 브라우저/OS 확대 설정에 그대로 따라간다.
- *  - 글자 굵기: Regular(400)가 최소선. Light/Thin 은 로드하지 않는다.
+ * ── 색 운용 규칙 ───────────────────────────────────────────────────────────
+ *  역할별로 색을 하나씩 예약한다. 색이 겹치면 "지금 어디 있는지"를 색으로
+ *  알 수 없게 된다.
  *
- * 주의: 테스트 자극(Stimulus)의 색·크기·타이밍은 이 토큰을 쓰지 않는다.
- * 측정 유효성 때문에 별도 고정값으로 관리한다. 단, 자극이 아닌 주변 UI
- * (안내 문구, 버튼 등)는 이 토큰을 그대로 따른다. 통제 대상은 자극뿐이다.
+ *    네온 노랑  포커스 (지금 위치) — 다른 용도로 쓰지 않는다
+ *    핫핑크     필수 표시, 링크, 상호작용 요소의 테두리
+ *    네온 초록  체크됨 / 완료
+ *    주황빨강   오류
+ *
+ * ── 빛 번짐(halation) 대응 ─────────────────────────────────────────────────
+ *  - 순수 검정(#000)과 순수 흰색(#fff)을 배경·본문에 쓰지 않는다.
+ *    그 조합이 번짐이 가장 심하다. 근검정 + 오프화이트를 쓴다.
+ *  - 네온은 테두리·포커스·배지처럼 좁은 면적에만 쓴다. 긴 문장이나
+ *    넓은 배경에 쓰지 않는다.
+ *  - glow(box-shadow / text-shadow)를 쓰지 않는다. 그게 번짐을 만든다.
+ *  - 네온 테두리는 2px 이상으로 한다. 얇은 선은 번짐에 먹힌다.
+ *  - 번짐 민감도는 사람마다 반대 방향이므로 밝은 화면으로 뒤집을 수 있게 한다.
+ *
+ * ── 값을 바꿀 때 ───────────────────────────────────────────────────────────
+ *  주석의 대비비는 브라우저 실측값이다. 손계산을 믿지 말고 다시 측정해서
+ *  갱신할 것. 본문 텍스트는 AAA(7:1) 목표, AA(4.5:1)가 하한이다.
+ *
+ *  주의: 테스트 자극(Stimulus)은 이 토큰을 쓰지 않는다. 측정 유효성 때문에
+ *  별도 고정값으로 관리한다. 단 자극이 아닌 주변 UI는 이 토큰을 따른다.
  */
 
 :root {
-  color-scheme: light dark;
-
-  /* --- 색상 (라이트) --------------------------------------------------- */
-  --color-bg: #ffffff;
-  --color-surface: #f5f7fa;
-  --color-surface-accent: #eef3ff;
-
-  --color-text: #14181f; /* 17.8:1  AAA */
-  --color-text-muted: #4a5260; /*  7.9:1  AAA */
-
-  --color-border: #6b7280; /*  4.8:1  (비텍스트 UI, 요건 3:1) */
-  --color-border-strong: #374151;
-
-  --color-accent: #1547b8; /*  8.0:1  AAA / 흰 글자 대비 8.0:1 */
-  --color-accent-hover: #103a99;
-  --color-accent-active: #0c2e7d;
-  --color-accent-contrast: #ffffff; /* accent 배경 위 글자색 */
-
-  --color-danger: #a52216; /*  7.4:1  AAA */
-  --color-danger-surface: #fef3f2;
-  --color-success: #05623b; /*  7.5:1  AAA */
-  --color-success-surface: #edfdf3;
-
-  --color-focus: #1547b8; /*  8.0:1  (포커스링, 요건 3:1) */
-  --color-focus-contrast: #ffffff;
+  color-scheme: dark light;
 
   /* --- 간격 ----------------------------------------------------------- */
   --space-1: 0.25rem;
@@ -53,69 +43,133 @@
   --space-7: 3rem;
 
   /* --- 타이포 ---------------------------------------------------------
-   * 저시력 기준: 본문 20px, 보조 텍스트 18px. 16px 미만 크기는 정의하지 않는다.
-   * "작은 글씨" 자리를 아예 만들지 않아서 나중에 쓰이는 것을 막는다.
+   * 돋보기 없이 읽히는 것이 목표다. 본문 24px, 보조 텍스트 20px.
+   * 20px 미만 크기는 정의하지 않는다 — "작은 글씨" 자리를 만들지 않아야
+   * 나중에 쓰이지 않는다. 전부 rem 이라 브라우저 확대에 그대로 따라간다.
    */
   --font-sans:
     'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Segoe UI',
     'Apple SD Gothic Neo', system-ui, sans-serif;
 
-  --text-sm: 1.125rem; /* 18px — 보조 텍스트의 하한 */
-  --text-base: 1.25rem; /* 20px — 본문 */
-  --text-lg: 1.5rem; /* 24px — h3 */
-  --text-xl: 1.75rem; /* 28px — h2 */
-  --text-2xl: 2.25rem; /* 36px — h1 */
+  --text-sm: 1.25rem; /* 20px — 보조 텍스트의 하한 */
+  --text-base: 1.5rem; /* 24px — 본문 */
+  --text-lg: 1.75rem; /* 28px — h3 */
+  --text-xl: 2.125rem; /* 34px — h2 */
+  --text-2xl: 2.75rem; /* 44px — h1 */
 
   /* Regular 가 하한. Light/Thin 은 로드하지 않으므로 지정해도 적용되지 않는다. */
   --font-weight-normal: 400;
-  --font-weight-medium: 500; /* 대비가 낮은 보조 텍스트 보강용 */
+  --font-weight-medium: 500;
   --font-weight-bold: 700;
 
-  /* 자소가 밀집되지 않도록 자간을 살짝 벌린다. 음수 자간은 쓰지 않는다. */
+  /* 자소가 밀집되지 않도록 자간을 벌린다. 음수 자간은 쓰지 않는다. */
   --tracking-normal: 0.01em;
-  --leading-normal: 1.7;
-  --leading-heading: 1.45;
+  --leading-normal: 1.75;
+  --leading-heading: 1.4;
 
   /* --- 그 외 ---------------------------------------------------------- */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --focus-ring-width: 3px;
-  --focus-ring-offset: 2px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
 
-  /* 최소 터치/클릭 타겟 (WCAG 2.5.8 / 2.5.5) */
-  --target-min: 44px;
+  /* 네온 테두리는 얇으면 번짐에 먹힌다. */
+  --border-width: 2px;
+  --border-width-strong: 3px;
 
-  --layout-max: 46rem;
+  /* 포커스 링은 두껍게. 이게 "지금 위치"의 핵심 신호다. */
+  --focus-ring-width: 4px;
+  --focus-ring-offset: 3px;
+
+  /* 최소 터치/클릭 타겟 */
+  --target-min: 48px;
+
+  --layout-max: 52rem;
 }
 
-/*
- * 다크 모드 — 셸 화면은 사용자 OS 설정을 존중한다.
- * (테스트 자극 화면은 이 규칙에서 제외되며 항상 고정 렌더링한다.)
- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f1115;
-    --color-surface: #191d24;
-    --color-surface-accent: #1b2233;
+/* ───────────────────────────────────────────────────────────────────────────
+ *  어두운 화면 (기본)
+ *  data-theme 속성이 없고 OS 가 dark 이거나, data-theme="dark" 일 때.
+ * ─────────────────────────────────────────────────────────────────────────── */
+:root,
+:root[data-theme='dark'] {
+  --color-bg: #0e0f13; /* 근검정. 순수 검정을 쓰지 않는다 */
+  --color-surface: #171922;
+  --color-surface-accent: #1d2030;
 
-    --color-text: #eef1f6; /* 16.7:1  AAA */
-    --color-text-muted: #b3bcca; /*  9.9:1  AAA */
+  --color-text: #f2f4f8; /* 17.4:1  AAA — 오프화이트 */
+  --color-text-muted: #c3c9d6; /* 11.5:1  AAA */
 
-    --color-border: #8b95a5; /*  6.2:1  (비텍스트 UI, 요건 3:1) */
-    --color-border-strong: #c3ccd9;
+  --color-border: #6d7589; /*  4.2:1  (비텍스트 UI, 요건 3:1) */
+  --color-border-strong: #a8b0c2;
 
-    --color-accent: #93b4ff; /*  9.2:1  AAA */
-    --color-accent-hover: #b0c8ff;
-    --color-accent-active: #cadaff;
-    --color-accent-contrast: #0d1220; /* accent 배경 위 글자색 (대비 8.9:1) */
+  --color-accent: #ff8fc2; /* 핫핑크 */
+  --color-accent-hover: #ffb8da;
+  --color-accent-contrast: #12040b; /* 핫핑크 배경 위 글자색 */
+  --color-accent-surface: #2b111f;
 
-    --color-danger: #ff9a90; /*  9.3:1  AAA */
-    --color-danger-surface: #2a1512;
-    --color-success: #6ee7a8; /* 12.5:1  AAA */
-    --color-success-surface: #0d2419;
+  --color-success: #5dff9f; /* 14.8:1  AAA — 네온 초록 */
+  --color-success-surface: #0a2417;
 
-    --color-focus: #ffd166; /* 13.1:1  (포커스링, 요건 3:1) */
-    --color-focus-contrast: #0f1115;
+  --color-danger: #ff9580; /* 주황빨강 (핑크와 구분) */
+  --color-danger-surface: #2a1410;
+
+  --color-focus: #ffe83d; /* 15.4:1 — 네온 노랑. 포커스 전용 */
+  --color-emphasis: #ffe83d; /* 강조 텍스트. 정적 텍스트에만 */
+}
+
+/* OS 가 밝은 화면인데 사용자가 따로 고르지 않았으면 밝은 화면을 쓴다. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --color-bg: #ffffff;
+    --color-surface: #f1f3f8;
+    --color-surface-accent: #ffeef6;
+
+    --color-text: #0a0b0f; /* 19.7:1  AAA */
+    --color-text-muted: #3d4351; /*  9.7:1  AAA */
+
+    --color-border: #6b7280; /*  4.8:1  (비텍스트 UI) */
+    --color-border-strong: #2b3040;
+
+    --color-accent: #8f0042; /* 어두운 핫핑크 */
+    --color-accent-hover: #6b0031;
+    --color-accent-contrast: #ffffff;
+    --color-accent-surface: #ffe3ef;
+
+    --color-success: #055c33; /*  8.1:1  AAA */
+    --color-success-surface: #e4f7ed;
+
+    --color-danger: #8c1c0f;
+    --color-danger-surface: #fdeeec;
+
+    /* 밝은 배경에서는 네온 노랑이 보이지 않는다. 근검정 링을 쓴다. */
+    --color-focus: #10121a;
+    --color-emphasis: #7a4a00; /*  7.5:1  AAA — 어두운 앰버 */
   }
+}
+
+/* 사용자가 밝은 화면을 직접 골랐으면 OS 설정과 무관하게 적용한다. */
+:root[data-theme='light'] {
+  --color-bg: #ffffff;
+  --color-surface: #f1f3f8;
+  --color-surface-accent: #ffeef6;
+
+  --color-text: #0a0b0f;
+  --color-text-muted: #3d4351;
+
+  --color-border: #6b7280;
+  --color-border-strong: #2b3040;
+
+  --color-accent: #8f0042;
+  --color-accent-hover: #6b0031;
+  --color-accent-contrast: #ffffff;
+  --color-accent-surface: #ffe3ef;
+
+  --color-success: #055c33;
+  --color-success-surface: #e4f7ed;
+
+  --color-danger: #8c1c0f;
+  --color-danger-surface: #fdeeec;
+
+  --color-focus: #10121a;
+  --color-emphasis: #7a4a00;
 }
