@@ -423,6 +423,10 @@ code {
 }
 
 /* --- 라디오 그룹 ----------------------------------------------------------- */
+.radio-group {
+  margin-bottom: var(--space-6);
+}
+
 .radio-group__legend {
   margin-bottom: var(--space-2);
   font-size: var(--text-base);
@@ -485,6 +489,41 @@ code {
   grid-column: 2;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+/* --- 조건부 입력란 --------------------------------------------------------- */
+/*
+ * 트리거 선택지 바로 아래에 렌더된다. 라디오 아이콘 열을 비우고 라벨과 같은
+ * 열에 붙여, 어느 선택지에 딸린 입력란인지 시각적으로 드러나게 한다.
+ */
+.radio-option__revealed {
+  grid-column: 2;
+  margin-top: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: var(--border-width-strong) solid var(--color-accent);
+}
+
+.radio-option__revealed .field {
+  margin-bottom: 0;
+}
+
+/* --- 검증 상태 ------------------------------------------------------------- */
+/* 색만으로 알리지 않는다. TextField 가 ✓ / ⚠ 문구를 함께 렌더한다. */
+.field__valid {
+  margin-bottom: var(--space-2);
+  color: var(--color-success);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 오류는 아니지만 알려야 하는 내용 (예: ID 경로코드 불일치) */
+.field__warning {
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: var(--border-width-strong) solid var(--color-emphasis);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 /* --- 오류 요약 ------------------------------------------------------------- */

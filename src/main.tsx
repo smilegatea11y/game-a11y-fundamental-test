@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
 
 /*
  * Pretendard — 한글 시인성이 검증된 서체. 자체 호스팅한다.
@@ -17,9 +16,19 @@ import 'pretendard/dist/web/static/Pretendard-Regular.css';
 import 'pretendard/dist/web/static/Pretendard-Medium.css';
 import 'pretendard/dist/web/static/Pretendard-Bold.css';
 
+/*
+ * 토큰·리셋·유틸 스타일을 App 보다 먼저 import 한다.
+ *
+ * ES 모듈은 import 순서대로 평가되므로, App 을 먼저 import 하면 화면들이
+ * 딸려 들어오면서 consent.css 가 base.css 보다 앞에 주입된다. 그러면
+ * 명시도가 같은 규칙에서 base.css 가 이겨 컴포넌트 스타일이 먹지 않는다.
+ * (실제로 input[data-status] 규칙이 이 문제로 적용되지 않았다.)
+ */
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/a11y.css';
+
+import { App } from './App';
 
 const container = document.getElementById('root');
 if (!container) {

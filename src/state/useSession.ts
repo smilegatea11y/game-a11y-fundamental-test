@@ -71,7 +71,7 @@ export function useSession() {
       const started = startSession();
       const result = updateSession(
         started.draft,
-        { consent, currentStep: 'participant' },
+        { consent, currentStep: 'basicInfo' },
         {
           type: 'consent-granted',
           step: 'consent',

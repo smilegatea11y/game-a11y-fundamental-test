@@ -1,5 +1,6 @@
+import { BasicInfoScreen } from './screens/basicInfo/BasicInfoScreen';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
-import { ParticipantScreen } from './screens/participant/ParticipantScreen';
+import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { useSession } from './state/useSession';
 
 /**
@@ -21,21 +22,36 @@ import { useSession } from './state/useSession';
  */
 export function App() {
   const session = useSession();
+  const step = session.draft?.currentStep ?? 'consent';
+
+  const renderScreen = () => {
+    // 동의 기록이 없으면 어떤 단계가 저장돼 있든 동의 화면으로 되돌린다.
+    if (session.consent === null) {
+      return (
+        <ConsentScreen
+          onComplete={session.grantConsent}
+          storageAvailable={session.storageAvailable}
+        />
+      );
+    }
+
+    switch (step) {
+      case 'basicInfo':
+        return (
+          <BasicInfoScreen session={session} onComplete={() => session.enterStep('disability')} />
+        );
+      // 아직 만들지 않은 단계는 공용 자리표시 화면이 받는다.
+      default:
+        return <PlaceholderScreen step={step === 'consent' ? 'basicInfo' : step} session={session} />;
+    }
+  };
 
   return (
     <>
       <a className="skip-link visually-hidden-focusable" href="#main">
         본문으로 건너뛰기
       </a>
-
-      {session.consent === null ? (
-        <ConsentScreen
-          onComplete={session.grantConsent}
-          storageAvailable={session.storageAvailable}
-        />
-      ) : (
-        <ParticipantScreen session={session} />
-      )}
+      {renderScreen()}
     </>
   );
 }

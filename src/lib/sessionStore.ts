@@ -1,4 +1,5 @@
 import { CONSENT_VERSION } from '../data/consentItems';
+import type { BasicInfo } from '../types/basicInfo';
 import type { ConsentRecord } from '../types/consent';
 
 /**
@@ -33,12 +34,40 @@ const LEGACY_KEYS = ['gaft.consent'];
  * 다시 시작한다. 다음 화면(기본정보 등)의 필드를 SessionDraft 에 추가할 때
  * 함께 올릴 것.
  */
-export const SESSION_SCHEMA_VERSION = 1;
+export const SESSION_SCHEMA_VERSION = 2;
 
 /** 로그가 무한히 커지지 않게 제한한다. 테스트 단계에서 항목이 빠르게 늘어난다. */
 const MAX_LOG_ENTRIES = 400;
 
-export type SessionStep = 'consent' | 'participant';
+/**
+ * 참여자가 지나는 단계. SYSTEM_SPEC 3-2~3-5 의 순서를 그대로 따른다.
+ * 아직 구현되지 않은 단계는 PlaceholderScreen 이 받는다.
+ */
+export type SessionStep =
+  | 'consent'
+  | 'basicInfo'
+  | 'disability'
+  | 'device'
+  | 'tests'
+  | 'submit';
+
+export const STEP_ORDER: readonly SessionStep[] = [
+  'consent',
+  'basicInfo',
+  'disability',
+  'device',
+  'tests',
+  'submit',
+];
+
+export const STEP_LABEL: Record<SessionStep, string> = {
+  consent: '개인정보 수집·이용 동의',
+  basicInfo: '참여자 기본정보',
+  disability: '장애 정보',
+  device: '기기 사양',
+  tests: '역량 테스트',
+  submit: '결과 제출',
+};
 
 export type SessionLogType =
   | 'session-started'
@@ -68,6 +97,8 @@ export interface SessionDraft {
   updatedAt: string;
   currentStep: SessionStep;
   consent: ConsentRecord | null;
+  /** 기본정보 (SYSTEM_SPEC 3-2). 입력 중에도 계속 갱신된다. */
+  basicInfo: BasicInfo | null;
   log: SessionLogEntry[];
 }
 
@@ -207,6 +238,7 @@ export function startSession(): { draft: SessionDraft; write: WriteResult } {
     updatedAt: at,
     currentStep: 'consent',
     consent: null,
+    basicInfo: null,
     log: [{ at, type: 'session-started' }],
   };
   return { draft, write: persist(draft) };
