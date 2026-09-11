@@ -52,19 +52,6 @@ export function ParticipantScreen({ consent, onReset }: ParticipantScreenProps) 
             <dt>동의서 버전</dt>
             <dd>{consent.consentVersion}</dd>
           </div>
-          <div className="detail-list__row">
-            <dt>연령 구분</dt>
-            <dd>{consent.ageBracket === 'under14' ? '만 14세 미만' : '만 14세 이상'}</dd>
-          </div>
-          {consent.guardian ? (
-            <div className="detail-list__row">
-              <dt>법정대리인</dt>
-              <dd>
-                {consent.guardian.name} ({consent.guardian.relation}) ·{' '}
-                {consent.guardian.contact}
-              </dd>
-            </div>
-          ) : null}
           {CONSENT_ITEMS.map((item) => (
             <div className="detail-list__row" key={item.id}>
               <dt>

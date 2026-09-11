@@ -29,7 +29,6 @@
 .field__hint,
 .radio-group__hint,
 .radio-option__description,
-.guardian__notice,
 .actions__hint,
 .page__version {
   font-weight: var(--font-weight-medium);
@@ -91,29 +90,6 @@
   color: var(--color-success);
 }
 
-.progress__track {
-  height: 0.625rem;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
-}
-
-.progress__bar {
-  height: 100%;
-  background: var(--color-accent);
-  transition: inline-size 200ms ease-out;
-}
-
-.progress--complete .progress__bar {
-  background: var(--color-success);
-}
-
-@media (forced-colors: active) {
-  .progress__bar {
-    background: Highlight;
-  }
-}
 
 /* --- 섹션 ----------------------------------------------------------------- */
 .section {
@@ -385,27 +361,6 @@ code {
   font-size: var(--text-sm);
 }
 
-/* --- 법정대리인 ------------------------------------------------------------ */
-.guardian {
-  margin-top: var(--space-4);
-  padding: var(--space-4);
-  border: 2px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.guardian__heading {
-  margin-bottom: var(--space-3);
-}
-
-.guardian__notice {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
 
 /* --- 오류 요약 ------------------------------------------------------------- */
 .error-summary {

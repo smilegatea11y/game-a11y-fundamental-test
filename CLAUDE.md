@@ -74,7 +74,7 @@ Vite + React 18 + TypeScript. 라우터·상태관리 라이브러리 없음 —
 - 클릭·터치 타겟은 최소 44×44px (`--target-min`)
 - 한국어 오류 메시지에 `을(를)` 같은 병기를 쓰지 않는다. 스크린리더가
   "을 괄호 를"로 읽는다. 받침을 보고 조사를 고른다
-  (`withObjectParticle()` in `src/state/useConsentForm.ts`)
+  (`withObjectParticle()` in `src/lib/korean.ts`)
 
 ### 저시력 시인성 — 스크린리더와 동등한 우선순위
 

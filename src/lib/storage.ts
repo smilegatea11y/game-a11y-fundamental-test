@@ -10,7 +10,6 @@ const STORAGE_KEY = 'gaft.consent';
  *  - 저장된 동의서 버전이 현재 문안 버전과 같아야 한다.
  *    (문안이 개정되면 구버전 동의는 무효 → 참여자에게 다시 동의를 받는다)
  *  - 필수 항목이 모두 true 여야 한다.
- *  - 만 14세 미만이면 법정대리인 정보가 있어야 한다.
  */
 function isValidRecord(value: unknown): value is ConsentRecord {
   if (typeof value !== 'object' || value === null) return false;
@@ -18,19 +17,10 @@ function isValidRecord(value: unknown): value is ConsentRecord {
 
   if (record.consentVersion !== CONSENT_VERSION) return false;
   if (typeof record.agreedAt !== 'string') return false;
-  if (record.ageBracket !== 'over14' && record.ageBracket !== 'under14') return false;
 
   const items = record.items;
   if (typeof items !== 'object' || items === null) return false;
   if (!REQUIRED_ITEM_IDS.every((id) => items[id] === true)) return false;
-
-  if (record.ageBracket === 'under14') {
-    const guardian = record.guardian;
-    if (!guardian) return false;
-    if (!guardian.name?.trim() || !guardian.relation?.trim() || !guardian.contact?.trim()) {
-      return false;
-    }
-  }
 
   return true;
 }
