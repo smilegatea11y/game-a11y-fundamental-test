@@ -552,6 +552,43 @@ code {
   font-weight: var(--font-weight-medium);
 }
 
+/* --- 부가 기기 (반복 폼) --------------------------------------------------- */
+/*
+ * 항목 하나 = 입력란 + 삭제 버튼. 테두리로 묶어 어디까지가 한 항목인지
+ * 시각적으로 드러나게 한다. 항목이 여러 개면 경계가 없으면 구분되지 않는다.
+ */
+.extra-device {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition:
+    border-color 120ms ease-out,
+    background-color 120ms ease-out;
+}
+
+.extra-device:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-surface);
+}
+
+.extra-device:focus-within {
+  border-color: var(--color-focus);
+  border-width: var(--border-width-strong);
+  background: var(--color-surface-accent);
+}
+
+.extra-device .field {
+  margin-bottom: var(--space-3);
+}
+
+/* 삭제 버튼은 본문 버튼보다 작게. 다만 클릭 타겟 최소 높이는 유지한다. */
+.btn--compact {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
 /* --- 오류 요약 ------------------------------------------------------------- */
 .error-summary {
   margin-bottom: var(--space-5);

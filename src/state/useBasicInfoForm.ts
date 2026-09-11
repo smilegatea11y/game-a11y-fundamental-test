@@ -35,8 +35,8 @@ export const basicInfoDomId = {
   genres: 'basic-genres',
   genreOther: 'basic-genres-other-input',
   weeklyPlaytime: 'basic-playtime',
-  assistiveDevice: 'basic-assistive',
-  assistiveDeviceNames: 'basic-assistive-names-input',
+  dailyAssistiveDevice: 'basic-assistive',
+  dailyAssistiveDeviceNames: 'basic-assistive-names-input',
   accessibilityFeatures: 'basic-a11y-features',
 } as const;
 
@@ -124,11 +124,11 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
     }));
   }, []);
 
-  const setAssistiveDeviceUse = useCallback((use: BasicInfo['assistiveDeviceUse']) => {
+  const setDailyAssistiveDeviceUse = useCallback((use: BasicInfo['dailyAssistiveDeviceUse']) => {
     setValue((prev) => ({
       ...prev,
-      assistiveDeviceUse: use,
-      assistiveDeviceNames: use === 'yes' ? prev.assistiveDeviceNames : '',
+      dailyAssistiveDeviceUse: use,
+      dailyAssistiveDeviceNames: use === 'yes' ? prev.dailyAssistiveDeviceNames : '',
     }));
   }, []);
 
@@ -241,11 +241,11 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
       });
     }
 
-    if (value.assistiveDeviceUse === null) {
+    if (value.dailyAssistiveDeviceUse === null) {
       list.push({
-        key: 'assistiveDeviceUse',
-        targetId: firstOptionId(basicInfoDomId.assistiveDevice, 'yes'),
-        message: C.assistiveDevice.missing,
+        key: 'dailyAssistiveDeviceUse',
+        targetId: firstOptionId(basicInfoDomId.dailyAssistiveDevice, 'yes'),
+        message: C.dailyAssistiveDevice.missing,
       });
     }
 
@@ -276,7 +276,7 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
       genderSelfDescribed: value.genderSelfDescribed.trim(),
       enrollmentPathOther: value.enrollmentPathOther.trim(),
       genreOther: value.genreOther.trim(),
-      assistiveDeviceNames: value.assistiveDeviceNames.trim(),
+      dailyAssistiveDeviceNames: value.dailyAssistiveDeviceNames.trim(),
     }),
     [value],
   );
@@ -288,7 +288,7 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
     setParticipantId,
     setGender,
     setEnrollmentPath,
-    setAssistiveDeviceUse,
+    setDailyAssistiveDeviceUse,
     toggleGenre,
     toggleAccessibilityFeature,
     idStatus,

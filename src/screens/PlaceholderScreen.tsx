@@ -84,9 +84,9 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
             <div className="detail-list__row">
               <dt>보조기기 사용</dt>
               <dd>
-                {basicInfo.assistiveDeviceUse === 'yes'
-                  ? `예${basicInfo.assistiveDeviceNames ? ` — ${basicInfo.assistiveDeviceNames}` : ''}`
-                  : basicInfo.assistiveDeviceUse === 'no'
+                {basicInfo.dailyAssistiveDeviceUse === 'yes'
+                  ? `예${basicInfo.dailyAssistiveDeviceNames ? ` — ${basicInfo.dailyAssistiveDeviceNames}` : ''}`
+                  : basicInfo.dailyAssistiveDeviceUse === 'no'
                     ? '아니요'
                     : '(미입력)'}
               </dd>

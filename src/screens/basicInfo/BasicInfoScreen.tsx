@@ -9,7 +9,7 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
   ACCESSIBILITY_FEATURE_OPTIONS,
   AGE_BRACKET_OPTIONS,
-  ASSISTIVE_DEVICE_OPTIONS,
+  DAILY_ASSISTIVE_OPTIONS,
   BASIC_INFO_COPY as C,
   ENROLLMENT_PATH_OPTIONS,
   GAME_SKILL_OPTIONS,
@@ -77,14 +77,14 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
     gender: form.value.gender === 'selfDescribed',
     path: form.value.enrollmentPath === 'other',
     genre: form.value.genres.includes('other'),
-    assistive: form.value.assistiveDeviceUse === 'yes',
+    assistive: form.value.dailyAssistiveDeviceUse === 'yes',
   });
   useEffect(() => {
     const now = {
       gender: form.value.gender === 'selfDescribed',
       path: form.value.enrollmentPath === 'other',
       genre: form.value.genres.includes('other'),
-      assistive: form.value.assistiveDeviceUse === 'yes',
+      assistive: form.value.dailyAssistiveDeviceUse === 'yes',
     };
     const labels: Record<keyof typeof now, string> = {
       gender: '성별 직접 입력란',
@@ -99,7 +99,7 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
     if (added.length > 0) {
       setAnnouncement(`${added.map((k) => labels[k]).join(', ')}이 아래에 추가되었습니다.`);
     }
-  }, [form.value.gender, form.value.enrollmentPath, form.value.genres, form.value.assistiveDeviceUse]);
+  }, [form.value.gender, form.value.enrollmentPath, form.value.genres, form.value.dailyAssistiveDeviceUse]);
 
   /*
    * 고유 ID 가 방금 유효해진 순간만 1회 알린다.
@@ -277,20 +277,20 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
 
           <OptionGroup
             type="radio"
-            groupId={domId.assistiveDevice}
-            legend={C.assistiveDevice.legend}
-            hint={C.assistiveDevice.hint}
-            error={form.errorFor('assistiveDeviceUse')}
-            options={ASSISTIVE_DEVICE_OPTIONS}
-            selected={form.value.assistiveDeviceUse === null ? [] : [form.value.assistiveDeviceUse]}
-            onToggle={(v, checked) => checked && form.setAssistiveDeviceUse(v)}
+            groupId={domId.dailyAssistiveDevice}
+            legend={C.dailyAssistiveDevice.legend}
+            hint={C.dailyAssistiveDevice.hint}
+            error={form.errorFor('dailyAssistiveDeviceUse')}
+            options={DAILY_ASSISTIVE_OPTIONS}
+            selected={form.value.dailyAssistiveDeviceUse === null ? [] : [form.value.dailyAssistiveDeviceUse]}
+            onToggle={(v, checked) => checked && form.setDailyAssistiveDeviceUse(v)}
             renderRevealed={() => (
               <TextField
-                id={domId.assistiveDeviceNames}
-                label={C.assistiveDevice.namesLabel}
-                hint={C.assistiveDevice.namesHint}
-                value={form.value.assistiveDeviceNames}
-                onChange={(v) => form.setField('assistiveDeviceNames', v)}
+                id={domId.dailyAssistiveDeviceNames}
+                label={C.dailyAssistiveDevice.namesLabel}
+                hint={C.dailyAssistiveDevice.namesHint}
+                value={form.value.dailyAssistiveDeviceNames}
+                onChange={(v) => form.setField('dailyAssistiveDeviceNames', v)}
               />
             )}
           />

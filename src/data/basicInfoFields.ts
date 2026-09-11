@@ -1,7 +1,7 @@
 import type {
   AccessibilityFeature,
   AgeBracket,
-  AssistiveDeviceUse,
+  DailyAssistiveDeviceUse,
   EnrollmentPath,
   GameSkill,
   Gender,
@@ -80,7 +80,7 @@ export const WEEKLY_PLAYTIME_OPTIONS: readonly FieldOption<WeeklyPlaytime>[] = [
   { value: 'over20', label: '20시간 이상' },
 ];
 
-export const ASSISTIVE_DEVICE_OPTIONS: readonly FieldOption<AssistiveDeviceUse>[] = [
+export const DAILY_ASSISTIVE_OPTIONS: readonly FieldOption<DailyAssistiveDeviceUse>[] = [
   { value: 'yes', label: '예', revealsDetail: true },
   { value: 'no', label: '아니요' },
 ];
@@ -148,12 +148,18 @@ export const BASIC_INFO_COPY = {
     missing: '주간 평균 게임 플레이 시간을 선택해 주세요.',
   },
 
-  assistiveDevice: {
-    legend: '보조기기 사용 여부',
-    hint: '게임을 할 때 보조기기를 쓰시는지 알려주세요.',
-    namesLabel: '보조기기 명칭 또는 모델명 (모르면 비워두셔도 됩니다)',
-    namesHint: '예: Xbox 적응형 컨트롤러, Tobii 아이트래커',
-    missing: '보조기기 사용 여부를 선택해 주세요.',
+  /*
+   * 여기는 "평소(일상·컴퓨터) 보조기기"다. 게임용 보조기기는 3-4 기기 사양
+   * 페이지에서 따로 받는다. 두 질문을 구분하지 않으면, NVDA 처럼 일상에도
+   * 게임에도 쓰는 기기를 어디에 답해야 할지 참여자가 알 수 없다.
+   * 그래서 힌트에 "게임용은 다음 단계에서 따로 묻는다"를 명시한다.
+   */
+  dailyAssistiveDevice: {
+    legend: '평소 쓰는 보조기기',
+    hint: '게임이 아니라 일상생활이나 컴퓨터를 쓸 때 늘 사용하시는 보조기기가 있는지 알려주세요. 게임할 때만 쓰는 기기는 다음 단계(기기 사양)에서 따로 물어봅니다.',
+    namesLabel: '평소 쓰는 보조기기 명칭 또는 모델명 (모르면 비워두셔도 됩니다)',
+    namesHint: '예: 스크린리더(NVDA·센스리더), 화면 확대 프로그램, 보청기·인공와우, 휠체어, 의사소통 보조기기',
+    missing: '평소 보조기기 사용 여부를 선택해 주세요.',
   },
 
   accessibilityFeatures: {

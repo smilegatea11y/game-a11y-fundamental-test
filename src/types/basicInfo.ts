@@ -26,7 +26,7 @@ export type Genre =
 
 export type WeeklyPlaytime = 'under5' | 'from5to10' | 'from10to20' | 'over20';
 
-export type AssistiveDeviceUse = 'yes' | 'no';
+export type DailyAssistiveDeviceUse = 'yes' | 'no';
 
 /** 'none'(사용 안 함)은 다른 값과 함께 선택될 수 없다. */
 export type AccessibilityFeature =
@@ -58,12 +58,12 @@ export interface BasicInfo {
 
   weeklyPlaytime: WeeklyPlaytime | null;
 
-  assistiveDeviceUse: AssistiveDeviceUse | null;
+  dailyAssistiveDeviceUse: DailyAssistiveDeviceUse | null;
   /**
-   * assistiveDeviceUse === 'yes' 일 때만 의미가 있다. 비워둘 수 있다.
+   * dailyAssistiveDeviceUse === 'yes' 일 때만 의미가 있다. 비워둘 수 있다.
    * 기기 사양 페이지(3-4)는 이 값을 이어받아 반복 질문하지 않는다.
    */
-  assistiveDeviceNames: string;
+  dailyAssistiveDeviceNames: string;
 
   accessibilityFeatures: AccessibilityFeature[];
 }
@@ -79,7 +79,7 @@ export const EMPTY_BASIC_INFO: BasicInfo = {
   genres: [],
   genreOther: '',
   weeklyPlaytime: null,
-  assistiveDeviceUse: null,
-  assistiveDeviceNames: '',
+  dailyAssistiveDeviceUse: null,
+  dailyAssistiveDeviceNames: '',
   accessibilityFeatures: [],
 };
