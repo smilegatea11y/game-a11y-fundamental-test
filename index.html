@@ -21,6 +21,8 @@
        * prefers-color-scheme 가 판단하게 맡긴다.
        */
       try {
+        // 키 문자열은 src/lib/theme.ts 의 THEME_STORAGE_KEY 와 같아야 한다.
+        // 이 스크립트는 React 마운트 전에 실행돼야 해서 모듈을 import 할 수 없다.
         var pref = localStorage.getItem('gaft.theme');
         if (pref === 'dark' || pref === 'light') {
           document.documentElement.setAttribute('data-theme', pref);
@@ -29,7 +31,7 @@
         /* localStorage 를 쓸 수 없는 환경 — 기기 설정을 따른다. */
       }
     </script>
-    <script type="module" crossorigin src="./assets/index-D3lu28a0.js"></script>
+    <script type="module" crossorigin src="./assets/index-C03PJVZ0.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3_xr2gM.css">
   </head>
   <body>
