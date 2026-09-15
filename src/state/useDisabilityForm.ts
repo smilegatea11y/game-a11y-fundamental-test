@@ -5,11 +5,14 @@ import {
   ASPECT_GROUP_ORDER,
   DISABILITY_COPY as C,
 } from '../data/disabilityFields';
+import { AFFECTED_AREA_OPTIONS } from '../data/disabilityFields';
 import { EMPTY_DISABILITY_INFO, sideKey } from '../types/disability';
 import type {
+  AffectedArea,
   AspectGroup,
   BodySide,
   DisabilityInfo,
+  DisabilityRegistration,
   DisabilitySeverity,
   DisabilityType,
 } from '../types/disability';
@@ -17,6 +20,8 @@ import type { ConsentValidationError } from '../types/consent';
 
 /** DOM id 를 한 곳에 모아둔다. 오류 요약이 이 id 로 포커스를 옮긴다. */
 export const disabilityDomId = {
+  registration: 'dis-registration',
+  affectedAreas: 'dis-areas',
   primaryTypes: 'dis-types',
   secondaryTypes: 'dis-types-more',
   severity: 'dis-severity',
@@ -26,54 +31,115 @@ export const disabilityDomId = {
   narrative: 'dis-narrative',
 } as const;
 
+const EXCLUSIVE_AREAS = new Set<AffectedArea>(
+  AFFECTED_AREA_OPTIONS.filter((o) => o.exclusive).map((o) => o.value),
+);
+
+/**
+ * 더 이상 묻지 않는 그룹의 2단계 값을 버린다.
+ *
+ * 1단계에서 무엇을 고르든(법정 유형이든 영역이든) 결국 "어떤 양상 그룹을
+ * 띄울지"가 바뀌고, 그때 사라진 그룹의 값이 남아 있으면 참여자가 보지도 않은
+ * 답이 CSV 에 실린다. 두 경로가 같은 정리 규칙을 써야 하므로 한 곳에 둔다.
+ */
+function pruneAspects(prev: DisabilityInfo, stillNeeded: Set<AspectGroup>): DisabilityInfo {
+  const aspectsByGroup: DisabilityInfo['aspectsByGroup'] = {};
+  const aspectOtherByGroup: DisabilityInfo['aspectOtherByGroup'] = {};
+  for (const group of stillNeeded) {
+    if (prev.aspectsByGroup[group] !== undefined) {
+      aspectsByGroup[group] = prev.aspectsByGroup[group];
+    }
+    if (prev.aspectOtherByGroup[group] !== undefined) {
+      aspectOtherByGroup[group] = prev.aspectOtherByGroup[group];
+    }
+  }
+
+  const aspectSideByKey: Record<string, BodySide> = {};
+  for (const [key, side] of Object.entries(prev.aspectSideByKey)) {
+    const [group] = key.split(':');
+    if (stillNeeded.has(group as AspectGroup)) aspectSideByKey[key] = side;
+  }
+
+  return { ...prev, aspectsByGroup, aspectOtherByGroup, aspectSideByKey };
+}
+
 export function useDisabilityForm(initial: DisabilityInfo | null) {
   const [value, setValue] = useState<DisabilityInfo>(initial ?? EMPTY_DISABILITY_INFO);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   /**
-   * 선택한 유형들이 가리키는 서로 다른 양상 그룹.
+   * 2단계에 띄울 양상 그룹.
    *
-   * 지체장애와 뇌병변장애는 같은 그룹을 가리키므로, 둘을 모두 선택해도
+   * 등록자는 고른 법정 유형에서, 미등록자는 직접 고른 영역에서 나온다.
+   * 지체장애와 뇌병변장애는 같은 그룹을 가리키므로 둘을 모두 선택해도
    * 질문은 한 번만 나온다. 순서는 ASPECT_GROUP_ORDER 를 따라
    * 화면 배치가 선택 순서에 따라 흔들리지 않게 한다.
    */
   const activeGroups = useMemo<AspectGroup[]>(() => {
-    const needed = new Set(value.types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
+    const needed =
+      value.registration === 'unregistered'
+        ? new Set(value.affectedAreas.filter((a): a is AspectGroup => a !== 'none'))
+        : new Set(value.types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
     return ASPECT_GROUP_ORDER.filter((g) => needed.has(g));
-  }, [value.types]);
+  }, [value.registration, value.types, value.affectedAreas]);
 
   /**
-   * 유형을 켜거나 끈다.
+   * 등록 여부를 바꾼다. 반대편 경로의 값을 버리는 것이 핵심이다.
    *
-   * 끌 때 딸린 값을 함께 버리는 것이 중요하다. 남겨두면 선택하지도 않은
-   * 유형의 정도나, 더 이상 묻지 않는 그룹의 양상이 CSV 에 실린다.
-   * 버릴 범위 판단이 화면과 훅 두 곳에 흩어지면 어긋나므로 여기서만 한다.
+   * 등록자로 답하다가 미등록으로 바꾸면 정도·법정 유형이 남아 있으면 안 되고,
+   * 그 반대도 마찬가지다. 남겨두면 화면에 보이지 않는 값이 CSV 로 나간다.
+   */
+  const setRegistration = useCallback((registration: DisabilityRegistration) => {
+    setValue((prev) => {
+      if (prev.registration === registration) return prev;
+      const cleared: DisabilityInfo = {
+        ...prev,
+        registration,
+        severity: registration === 'registered' ? prev.severity : null,
+        types: registration === 'registered' ? prev.types : [],
+        affectedAreas: registration === 'unregistered' ? prev.affectedAreas : [],
+      };
+      const stillNeeded =
+        registration === 'unregistered'
+          ? new Set(cleared.affectedAreas.filter((a): a is AspectGroup => a !== 'none'))
+          : new Set(cleared.types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
+      return pruneAspects(cleared, stillNeeded);
+    });
+  }, []);
+
+  /** 미등록자 경로 — 영역을 켜고 끈다. "해당 없음"은 배타 선택. */
+  const toggleAffectedArea = useCallback((area: AffectedArea, checked: boolean) => {
+    setValue((prev) => {
+      let affectedAreas: AffectedArea[];
+      if (!checked) {
+        affectedAreas = prev.affectedAreas.filter((a) => a !== area);
+      } else if (EXCLUSIVE_AREAS.has(area)) {
+        affectedAreas = [area];
+      } else {
+        affectedAreas = [
+          ...prev.affectedAreas.filter((a) => !EXCLUSIVE_AREAS.has(a)),
+          area,
+        ];
+      }
+      const stillNeeded = new Set(
+        affectedAreas.filter((a): a is AspectGroup => a !== 'none'),
+      );
+      return pruneAspects({ ...prev, affectedAreas }, stillNeeded);
+    });
+  }, []);
+
+  /**
+   * 등록자 경로 — 법정 유형을 켜거나 끈다.
+   *
+   * 끌 때 딸린 값을 함께 버린다. 남겨두면 더 이상 묻지 않는 그룹의 양상이
+   * CSV 에 실린다. 버릴 범위 판단이 화면과 훅 두 곳에 흩어지면 어긋나므로
+   * pruneAspects 한 곳에서만 한다.
    */
   const toggleType = useCallback((type: DisabilityType, checked: boolean) => {
     setValue((prev) => {
       const types = checked ? [...prev.types, type] : prev.types.filter((t) => t !== type);
-
-      // 남은 유형들이 여전히 필요로 하는 그룹만 유지한다.
       const stillNeeded = new Set(types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
-      const aspectsByGroup: DisabilityInfo['aspectsByGroup'] = {};
-      const aspectOtherByGroup: DisabilityInfo['aspectOtherByGroup'] = {};
-      for (const group of stillNeeded) {
-        if (prev.aspectsByGroup[group] !== undefined) {
-          aspectsByGroup[group] = prev.aspectsByGroup[group];
-        }
-        if (prev.aspectOtherByGroup[group] !== undefined) {
-          aspectOtherByGroup[group] = prev.aspectOtherByGroup[group];
-        }
-      }
-
-      // 사라진 그룹의 좌우 값도 함께 버린다.
-      const aspectSideByKey: Record<string, BodySide> = {};
-      for (const [key, side] of Object.entries(prev.aspectSideByKey)) {
-        const [group] = key.split(':');
-        if (stillNeeded.has(group as AspectGroup)) aspectSideByKey[key] = side;
-      }
-
-      return { ...prev, types, aspectsByGroup, aspectOtherByGroup, aspectSideByKey };
+      return pruneAspects({ ...prev, types }, stillNeeded);
     });
   }, []);
 
@@ -126,20 +192,37 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
   const errors = useMemo<ConsentValidationError[]>(() => {
     const list: ConsentValidationError[] = [];
 
-    // 1단계 — 정도가 유형보다 위에 있으므로 오류도 그 순서로 담는다.
-    if (value.severity === null) {
+    /*
+     * 1단계. 오류 순서는 화면 순서와 같아야 하므로 갈림길 → 갈래별 질문 순으로 담는다.
+     * 갈림길에 답하기 전에는 아래 질문이 화면에 없으므로 검증하지 않는다 —
+     * 보이지도 않는 항목을 오류 요약에 올리면 눌러도 갈 곳이 없다.
+     */
+    if (value.registration === null) {
       list.push({
-        key: 'severity',
-        targetId: `${disabilityDomId.severity}-severe`,
-        message: C.step1.severityMissing,
+        key: 'registration',
+        targetId: `${disabilityDomId.registration}-registered`,
+        message: C.step1.registrationMissing,
       });
-    }
-
-    if (value.types.length === 0) {
+    } else if (value.registration === 'registered') {
+      if (value.severity === null) {
+        list.push({
+          key: 'severity',
+          targetId: `${disabilityDomId.severity}-severe`,
+          message: C.step1.severityMissing,
+        });
+      }
+      if (value.types.length === 0) {
+        list.push({
+          key: 'types',
+          targetId: `${disabilityDomId.primaryTypes}-vision`,
+          message: C.step1.typeMissing,
+        });
+      }
+    } else if (value.affectedAreas.length === 0) {
       list.push({
-        key: 'types',
-        targetId: `${disabilityDomId.primaryTypes}-vision`,
-        message: C.step1.typeMissing,
+        key: 'affectedAreas',
+        targetId: `${disabilityDomId.affectedAreas}-visionAspects`,
+        message: C.step1.areasMissing,
       });
     }
 
@@ -203,6 +286,8 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
     value,
     normalized,
     activeGroups,
+    setRegistration,
+    toggleAffectedArea,
     toggleType,
     setSeverity,
     toggleAspect,

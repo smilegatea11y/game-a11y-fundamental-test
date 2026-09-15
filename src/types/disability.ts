@@ -49,16 +49,40 @@ export type AspectGroup =
   | 'epilepsyAspects'
   | 'internalAspects'
   | 'speechAspects';
-
 /** 좌우 구분이 필요한 양상에 붙는 인라인 값. */
 export type BodySide = 'right' | 'left';
 
+/**
+ * 1단계 갈림길 — 법정 장애인 등록 여부.
+ *
+ * 등록하지 않았지만 게임 플레이에 영향을 받는 사람이 있다. 색각이상은
+ * 장애인복지법상 시각장애 기준에 들지 않고, 특정 장면에 대한 공포증도
+ * 법정 유형이 아니다. 그런데 게임 접근성 측면에서는 정확히 측정 대상이다.
+ *
+ * 등록 여부를 먼저 갈라야 하는 이유: 미등록자에게 "법정 유형 16개 중
+ * 고르세요"를 보여주면 고를 것이 없고, 억지로 하나 고르면 데이터가 거짓이 된다.
+ * 장애 정도(중증/경증)도 등록자에게만 있는 값이다.
+ */
+export type DisabilityRegistration = 'registered' | 'unregistered';
+
+/**
+ * 미등록자가 직접 고르는 "영향을 받는 영역".
+ *
+ * 등록자 경로에서 법정 유형이 하던 일 — 2단계에 어떤 양상 그룹을 띄울지
+ * 정하는 일 — 을 미등록자 경로에서는 이 값이 대신한다. 그래서 값의 정체가
+ * 양상 그룹 그 자체다. 'none' 은 "영향을 주는 상태가 없음"(대조군)이다.
+ */
+export type AffectedArea = AspectGroup | 'none';
+
 export interface DisabilityInfo {
-  /** 1단계 — 선택한 법정 유형 (다중) */
+  /** 1단계 — 갈림길. 이 값에 따라 아래 두 갈래 중 하나만 채워진다. */
+  registration: DisabilityRegistration | null;
+
+  /** 1단계 (등록자) — 선택한 법정 유형 (다중) */
   types: DisabilityType[];
 
   /**
-   * 1단계 — 장애 정도. **사람당 하나**다.
+   * 1단계 (등록자) — 장애 정도. **사람당 하나**다.
    *
    * 2019년 장애등급제(1~6급) 폐지 이후 복지카드에는 "장애의 정도가 심한
    * 장애인 / 심하지 않은 장애인" 두 가지 중 하나만 표기된다. 중복장애도
@@ -66,6 +90,9 @@ export interface DisabilityInfo {
    * 맞지 않고 유형을 여러 개 고른 사람에게 같은 질문을 반복시킨다.
    */
   severity: DisabilitySeverity | null;
+
+  /** 1단계 (미등록자) — 게임 플레이에 영향을 주는 영역 (다중) */
+  affectedAreas: AffectedArea[];
 
   /**
    * 2단계 — 양상 그룹별로 선택한 세부 양상 코드들.
@@ -89,8 +116,10 @@ export interface DisabilityInfo {
 }
 
 export const EMPTY_DISABILITY_INFO: DisabilityInfo = {
+  registration: null,
   types: [],
   severity: null,
+  affectedAreas: [],
   aspectsByGroup: {},
   aspectOtherByGroup: {},
   aspectSideByKey: {},

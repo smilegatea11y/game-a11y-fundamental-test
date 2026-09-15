@@ -36,7 +36,7 @@ const LEGACY_KEYS = ['gaft.consent'];
  * 다시 시작한다. 다음 화면(기본정보 등)의 필드를 SessionDraft 에 추가할 때
  * 함께 올릴 것.
  */
-export const SESSION_SCHEMA_VERSION = 5;
+export const SESSION_SCHEMA_VERSION = 6;
 
 /** 로그가 무한히 커지지 않게 제한한다. 테스트 단계에서 항목이 빠르게 늘어난다. */
 const MAX_LOG_ENTRIES = 400;

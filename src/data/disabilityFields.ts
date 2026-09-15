@@ -1,8 +1,10 @@
 import { withSubjectParticle } from '../lib/korean';
 import type { FieldOption } from '../components/ui/OptionGroup';
 import type {
+  AffectedArea,
   AspectGroup,
   BodySide,
+  DisabilityRegistration,
   DisabilitySeverity,
   DisabilityType,
 } from '../types/disability';
@@ -25,7 +27,81 @@ import type {
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-/* ── 1단계 — 법정 유형 ─────────────────────────────────────────────────────── */
+/* ── 1단계 — 갈림길: 등록 여부 ──────────────────────────────────────────────── */
+
+/**
+ * 법정 유형을 보여주기 **전에** 묻는다.
+ *
+ * 미등록자에게 법정 유형 16개를 들이밀면 고를 것이 없다. 억지로 비슷한 것을
+ * 하나 고르게 하면 "시각장애인 1명"으로 집계되는데 실제로는 색각이상자다 —
+ * 데이터가 거짓이 된다. 정도(중증/경증)도 등록자에게만 있는 값이라
+ * 갈라놓지 않으면 미등록자가 답할 수 없는 필수 질문에 막힌다.
+ */
+export const REGISTRATION_OPTIONS: readonly FieldOption<DisabilityRegistration>[] = [
+  {
+    value: 'registered',
+    label: '등록 장애인입니다',
+    caption: '장애인 복지카드(장애인등록증)를 발급받으셨습니다',
+  },
+  {
+    value: 'unregistered',
+    label: '해당 없음 (등록 장애인이 아닙니다)',
+    caption: '등록은 하지 않으셨어도 참여하실 수 있습니다. 다음 질문에서 어떤 영역에 영향이 있는지 알려주세요',
+  },
+];
+
+/**
+ * 미등록자 경로의 영역 선택.
+ *
+ * 값이 곧 양상 그룹 id 다. 등록자 경로에서 법정 유형이 하던 일(2단계에 어떤
+ * 질문을 띄울지 정하는 일)을 여기서는 참여자가 직접 고른다.
+ */
+export const AFFECTED_AREA_OPTIONS: readonly FieldOption<AffectedArea>[] = [
+  {
+    value: 'visionAspects',
+    label: '보는 것 (시각)',
+    caption: '예: 색을 구분하기 어려움(색약·색맹), 작은 글자가 안 보임, 빛 번짐',
+  },
+  {
+    value: 'hearingAspects',
+    label: '듣는 것 (청각)',
+    caption: '예: 특정 높낮이가 안 들림, 소리 방향을 알기 어려움, 이명',
+  },
+  {
+    value: 'motorAspects',
+    label: '조작 (손·팔·다리)',
+    caption: '예: 손 떨림, 연타가 어려움, 오래 조작하면 지침',
+  },
+  {
+    value: 'cognitiveAspects',
+    label: '인지·감각',
+    caption: '예: 감각 과민, 오래 집중하기 어려움, 특정 장면을 견디기 어려움(공포증)',
+  },
+  {
+    value: 'epilepsyAspects',
+    label: '빛 자극·발작',
+    caption: '예: 점멸하는 화면이나 특정 무늬에 민감함',
+  },
+  {
+    value: 'internalAspects',
+    label: '체력·지속 시간',
+    caption: '예: 오래 플레이하면 지침, 통증, 자주 쉬어야 함',
+  },
+  {
+    value: 'speechAspects',
+    label: '말하기·음성 소통',
+    caption: '예: 음성 채팅이 어려움, 음성 인식이 내 발음을 못 알아들음',
+  },
+  // 대조군. 다른 항목과 동시에 선택되면 모순이므로 배타 처리한다.
+  {
+    value: 'none',
+    label: '해당 없음',
+    caption: '게임 플레이에 영향을 주는 상태가 없습니다',
+    exclusive: true,
+  },
+];
+
+/* ── 1단계 — 법정 유형 (등록자 경로) ────────────────────────────────────────── */
 
 /**
  * 기본 노출 7개. (장애인복지법 시행령 별표1)
@@ -194,6 +270,7 @@ const ASPECT_GROUPS: readonly AspectGroupSpec[] = [
       { value: 'sustainedFocus', label: '오래 집중하기 어려움' },
       { value: 'memory', label: '조작 방법이나 진행 상황을 기억하기 어려움' },
       { value: 'sensoryOverload', label: '소리·빛 자극이 강하면 힘들어짐 (감각 과민)' },
+      { value: 'phobia', label: '특정 장면이나 소재가 나오면 견디기 어려움 (공포증)' },
       OTHER_OPTION,
     ],
   },
@@ -267,10 +344,19 @@ export const ASPECT_GROUP_ORDER: readonly AspectGroup[] = NORMALIZED_ASPECT_GROU
 
 export const DISABILITY_COPY = {
   intro:
-    '이 정보는 장애 유형에 맞는 테스트를 배정하고, 조작이 맞지 않는 테스트를 대체하거나 건너뛰는 데 씁니다. 입력하신 내용은 서버로 전송되지 않고 이 브라우저에만 기록됩니다.',
+    '이 정보는 맞는 테스트를 배정하고, 조작이 맞지 않는 테스트를 대체하거나 건너뛰는 데 씁니다. 장애인 등록을 하지 않으셨더라도 색각이상이나 공포증처럼 게임 플레이에 영향을 주는 상태가 있으면 그대로 참여하실 수 있습니다. 입력하신 내용은 서버로 전송되지 않고 이 브라우저에만 기록됩니다.',
 
   step1: {
-    heading: '1단계 · 장애 유형과 정도',
+    heading: '1단계 · 장애 등록 여부와 유형',
+    registrationLegend: '장애인 등록 여부',
+    registrationHint:
+      '어느 쪽을 고르시느냐에 따라 다음 질문이 달라집니다. 등록 장애인이 아니어도 참여 대상입니다.',
+    registrationMissing: '장애인 등록 여부를 선택해 주세요.',
+    areasLegend: '게임 플레이에 영향을 주는 영역',
+    areasHint:
+      '해당되는 영역을 모두 선택해 주세요. 선택하신 영역에 대해서만 2단계에서 자세히 여쭤봅니다. 진단을 받지 않으셨어도, 실제로 겪는 어려움을 기준으로 고르시면 됩니다.',
+    areasMissing:
+      '영향을 주는 영역을 하나 이상 선택해 주세요. 해당되는 것이 없으면 "해당 없음"을 골라주세요.',
     legend: '게임 플레이에 영향이 있다고 생각되는 장애 유형',
     hint: '해당되는 것을 모두 선택해 주세요. 여러 개 선택하실 수 있습니다.',
     secondaryLegend: '그 외 장애 유형',

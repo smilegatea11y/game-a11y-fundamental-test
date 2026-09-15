@@ -9,10 +9,12 @@ import { TextArea } from '../../components/ui/TextArea';
 import { TextField } from '../../components/ui/TextField';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
+  AFFECTED_AREA_OPTIONS,
   ASPECT_GROUP_MAP,
   DISABILITY_COPY as C,
   NARRATIVE_EXAMPLES,
   PRIMARY_TYPE_OPTIONS,
+  REGISTRATION_OPTIONS,
   SECONDARY_TYPE_OPTIONS,
   SEVERITY_OPTIONS,
   SIDE_OPTIONS,
@@ -67,6 +69,22 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
     errorSummaryRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
   }, [failedSubmitCount]);
 
+  /*
+   * 갈림길에 답하면 1단계 아래에 질문 묶음이 통째로 바뀐다. 라디오를 고른
+   * 직후라 포커스는 갈림길에 있고, 바뀐 곳은 그 아래라 눈으로도 화면리더로도
+   * 놓치기 쉽다. 포커스는 빼앗지 않고 등장 사실만 알린다.
+   */
+  const previousRegistration = useRef(form.value.registration);
+  useEffect(() => {
+    const now = form.value.registration;
+    if (now === previousRegistration.current) return;
+    previousRegistration.current = now;
+    if (now === 'registered') {
+      setAnnouncement(`${C.step1.severityLegend}와 ${C.step1.legend} 질문이 나타났습니다.`);
+    } else if (now === 'unregistered') {
+      setAnnouncement(`${C.step1.areasLegend} 질문이 나타났습니다.`);
+    }
+  }, [form.value.registration]);
   /*
    * 2단계에 새 질문 묶음이 나타난 사실을 알린다.
    * 1단계에서 유형을 고르면 화면 아래쪽 구조가 바뀌는데, 스크롤 밖이라
@@ -136,52 +154,94 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
           </h2>
 
           {/*
-            장애 정도를 유형보다 먼저, 한 번만 묻는다.
-            복지카드에 정도가 하나만 적히므로 유형마다 반복해 물을 것이 아니다.
+            갈림길. 법정 유형을 보여주기 전에 등록 여부부터 묻는다.
+            미등록자에게 법정 유형 16개를 보여주면 고를 것이 없고, 억지로
+            비슷한 것을 고르게 하면 데이터가 거짓이 된다.
           */}
           <OptionGroup
             type="radio"
-            groupId={domId.severity}
-            legend={C.step1.severityLegend}
-            hint={C.step1.severityHint}
-            error={form.errorFor('severity')}
-            options={SEVERITY_OPTIONS}
-            selected={form.value.severity === null ? [] : [form.value.severity]}
-            onToggle={(v, checked) => checked && form.setSeverity(v)}
-          />
-
-          <OptionGroup
-            type="checkbox"
-            groupId={domId.primaryTypes}
-            legend={C.step1.legend}
-            hint={C.step1.hint}
-            error={form.errorFor('types')}
-            options={PRIMARY_TYPE_OPTIONS}
-            selected={form.value.types}
-            onToggle={form.toggleType}
+            groupId={domId.registration}
+            legend={C.step1.registrationLegend}
+            hint={C.step1.registrationHint}
+            error={form.errorFor('registration')}
+            options={REGISTRATION_OPTIONS}
+            selected={form.value.registration === null ? [] : [form.value.registration]}
+            onToggle={(v, checked) => checked && form.setRegistration(v)}
           />
 
           {/*
-           * 그 외 8개 유형. 삭제가 아니라 노출 우선순위 조정이다.
-           * 선택된 항목이 있으면 펼친 상태로 시작한다.
-           */}
-          <details className="disclosure" open={hasSecondarySelection}>
-            <summary className="disclosure__summary">
-              <span className="disclosure__chevron" aria-hidden="true" />
-              <span>{C.step1.secondarySummary}</span>
-            </summary>
-            <div className="disclosure__panel">
+            갈림길에 답하기 전에는 어느 쪽 질문도 띄우지 않는다.
+            둘 다 보여주면 참여자가 무엇을 채워야 하는지 알 수 없다.
+          */}
+          {form.value.registration === 'registered' ? (
+            <>
+              {/*
+                장애 정도를 유형보다 먼저, 한 번만 묻는다.
+                복지카드에 정도가 하나만 적히므로 유형마다 반복해 물을 것이 아니다.
+              */}
+              <OptionGroup
+                type="radio"
+                groupId={domId.severity}
+                legend={C.step1.severityLegend}
+                hint={C.step1.severityHint}
+                error={form.errorFor('severity')}
+                options={SEVERITY_OPTIONS}
+                selected={form.value.severity === null ? [] : [form.value.severity]}
+                onToggle={(v, checked) => checked && form.setSeverity(v)}
+              />
+
               <OptionGroup
                 type="checkbox"
-                groupId={domId.secondaryTypes}
-                legend={C.step1.secondaryLegend}
-                options={SECONDARY_TYPE_OPTIONS}
+                groupId={domId.primaryTypes}
+                legend={C.step1.legend}
+                hint={C.step1.hint}
+                error={form.errorFor('types')}
+                options={PRIMARY_TYPE_OPTIONS}
                 selected={form.value.types}
                 onToggle={form.toggleType}
               />
-            </div>
-          </details>
+
+              {/*
+               * 그 외 9개 유형. 삭제가 아니라 노출 우선순위 조정이다.
+               * 선택된 항목이 있으면 펼친 상태로 시작한다.
+               */}
+              <details className="disclosure" open={hasSecondarySelection}>
+                <summary className="disclosure__summary">
+                  <span className="disclosure__chevron" aria-hidden="true" />
+                  <span>{C.step1.secondarySummary}</span>
+                </summary>
+                <div className="disclosure__panel">
+                  <OptionGroup
+                    type="checkbox"
+                    groupId={domId.secondaryTypes}
+                    legend={C.step1.secondaryLegend}
+                    options={SECONDARY_TYPE_OPTIONS}
+                    selected={form.value.types}
+                    onToggle={form.toggleType}
+                  />
+                </div>
+              </details>
+            </>
+          ) : null}
+
+          {/*
+            미등록자 경로. 법정 유형이 하던 일(2단계에 어떤 질문을 띄울지
+            정하는 일)을 참여자가 영역으로 직접 고른다.
+          */}
+          {form.value.registration === 'unregistered' ? (
+            <OptionGroup
+              type="checkbox"
+              groupId={domId.affectedAreas}
+              legend={C.step1.areasLegend}
+              hint={C.step1.areasHint}
+              error={form.errorFor('affectedAreas')}
+              options={AFFECTED_AREA_OPTIONS}
+              selected={form.value.affectedAreas}
+              onToggle={form.toggleAffectedArea}
+            />
+          ) : null}
         </section>
+
 
         {/* ── 2단계 ─────────────────────────────────────────────────────── */}
         {form.activeGroups.length > 0 ? (

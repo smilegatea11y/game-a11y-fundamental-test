@@ -2,7 +2,7 @@ import { SaveStatus } from '../components/a11y/SaveStatus';
 import { StepBackButton } from '../components/dev/StepBackButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { SUBMISSION_INFO } from '../data/consentItems';
-import { TYPE_LABEL } from '../data/disabilityFields';
+import { ASPECT_GROUP_MAP, TYPE_LABEL } from '../data/disabilityFields';
 import { buildResultFilename } from '../lib/csv';
 import { STEP_LABEL, STEP_ORDER } from '../lib/sessionStore';
 import type { SessionStep } from '../lib/sessionStore';
@@ -110,23 +110,49 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
             {disability !== null ? (
               <>
                 <div className="detail-list__row">
-                  <dt>장애 정도</dt>
+                  <dt>장애인 등록</dt>
                   <dd>
-                    {disability.severity === 'severe'
-                      ? '심한 장애 (중증)'
-                      : disability.severity === 'mild'
-                        ? '심하지 않은 장애 (경증)'
+                    {disability.registration === 'registered'
+                      ? '등록 장애인'
+                      : disability.registration === 'unregistered'
+                        ? '해당 없음 (미등록)'
                         : '(미입력)'}
                   </dd>
                 </div>
-                <div className="detail-list__row">
-                  <dt>장애 유형</dt>
-                  <dd>
-                    {disability.types.length > 0
-                      ? disability.types.map((t) => TYPE_LABEL[t]).join(', ')
-                      : '(미입력)'}
-                  </dd>
-                </div>
+                {disability.registration === 'registered' ? (
+                  <>
+                    <div className="detail-list__row">
+                      <dt>장애 정도</dt>
+                      <dd>
+                        {disability.severity === 'severe'
+                          ? '심한 장애 (중증)'
+                          : disability.severity === 'mild'
+                            ? '심하지 않은 장애 (경증)'
+                            : '(미입력)'}
+                      </dd>
+                    </div>
+                    <div className="detail-list__row">
+                      <dt>장애 유형</dt>
+                      <dd>
+                        {disability.types.length > 0
+                          ? disability.types.map((t) => TYPE_LABEL[t]).join(', ')
+                          : '(미입력)'}
+                      </dd>
+                    </div>
+                  </>
+                ) : null}
+                {disability.registration === 'unregistered' ? (
+                  <div className="detail-list__row">
+                    <dt>영향을 주는 영역</dt>
+                    <dd>
+                      {disability.affectedAreas.length > 0
+                        ? disability.affectedAreas
+                            .map((a) => (a === 'none' ? '해당 없음' : ASPECT_GROUP_MAP[a].title))
+                            .join(', ')
+                        : '(미입력)'}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="detail-list__row">
                   <dt>세부 양상</dt>
                   <dd>
