@@ -147,7 +147,7 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
                     <dd>
                       {disability.affectedAreas.length > 0
                         ? disability.affectedAreas
-                            .map((a) => (a === 'none' ? '해당 없음' : ASPECT_GROUP_MAP[a].title))
+                            .map((a) => ASPECT_GROUP_MAP[a].title)
                             .join(', ')
                         : '(미입력)'}
                     </dd>

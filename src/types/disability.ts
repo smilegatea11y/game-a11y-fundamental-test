@@ -49,8 +49,14 @@ export type AspectGroup =
   | 'epilepsyAspects'
   | 'internalAspects'
   | 'speechAspects';
-/** 좌우 구분이 필요한 양상에 붙는 인라인 값. */
-export type BodySide = 'right' | 'left';
+/**
+ * 좌우 구분이 필요한 양상에 붙는 인라인 값.
+ *
+ * 'both' 는 보청기·인공와우처럼 양쪽에 함께 쓰는 경우에만 쓴다.
+ * "한쪽 손을 쓰기 어려움"이나 "한쪽 눈이 보이지 않음"처럼 정의상 한쪽인
+ * 항목에는 노출하지 않는다 — 양쪽이면 별도 선택지가 따로 있다.
+ */
+export type BodySide = 'right' | 'left' | 'both';
 
 /**
  * 1단계 갈림길 — 법정 장애인 등록 여부.
@@ -64,15 +70,6 @@ export type BodySide = 'right' | 'left';
  * 장애 정도(중증/경증)도 등록자에게만 있는 값이다.
  */
 export type DisabilityRegistration = 'registered' | 'unregistered';
-
-/**
- * 미등록자가 직접 고르는 "영향을 받는 영역".
- *
- * 등록자 경로에서 법정 유형이 하던 일 — 2단계에 어떤 양상 그룹을 띄울지
- * 정하는 일 — 을 미등록자 경로에서는 이 값이 대신한다. 그래서 값의 정체가
- * 양상 그룹 그 자체다. 'none' 은 "영향을 주는 상태가 없음"(대조군)이다.
- */
-export type AffectedArea = AspectGroup | 'none';
 
 export interface DisabilityInfo {
   /** 1단계 — 갈림길. 이 값에 따라 아래 두 갈래 중 하나만 채워진다. */
@@ -91,8 +88,14 @@ export interface DisabilityInfo {
    */
   severity: DisabilitySeverity | null;
 
-  /** 1단계 (미등록자) — 게임 플레이에 영향을 주는 영역 (다중) */
-  affectedAreas: AffectedArea[];
+  /**
+   * 1단계 (미등록자) — 게임 플레이에 영향을 주는 영역 (다중).
+   *
+   * 값이 곧 양상 그룹 id 다. 등록자 경로에서 법정 유형이 하던 일 — 2단계에
+   * 어떤 질문을 띄울지 정하는 일 — 을 미등록자 경로에서는 이 값이 대신한다.
+   * 비어 있을 수 없다: 이 경로를 고른 사람은 겪고 있는 영역이 하나는 있다.
+   */
+  affectedAreas: AspectGroup[];
 
   /**
    * 2단계 — 양상 그룹별로 선택한 세부 양상 코드들.

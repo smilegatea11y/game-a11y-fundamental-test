@@ -1,7 +1,6 @@
 import { withSubjectParticle } from '../lib/korean';
 import type { FieldOption } from '../components/ui/OptionGroup';
 import type {
-  AffectedArea,
   AspectGroup,
   BodySide,
   DisabilityRegistration,
@@ -44,9 +43,9 @@ export const REGISTRATION_OPTIONS: readonly FieldOption<DisabilityRegistration>[
     caption: '장애인 복지카드(장애인등록증)를 발급받으셨습니다',
   },
   /*
-   * "해당 없음"으로 시작하지 않는다. 아래 영역 선택에도 "해당 없음"이 있어서
-   * 같은 말이 한 화면에 두 번 나오면 화면리더로 훑을 때 구분되지 않는다.
-   * 그리고 이 선택지의 요지는 "없음"이 아니라 "등록은 안 했지만 겪고 있음"이다.
+   * "해당 없음"으로 시작하지 않는다. 이 선택지의 요지는 "없음"이 아니라
+   * "등록은 안 했지만 겪고 있음"이다. 라벨이 그 사실을 말해야 뒤따르는
+   * 영역 질문(하나 이상 필수)과 앞뒤가 맞는다.
    */
   {
     value: 'unregistered',
@@ -61,8 +60,12 @@ export const REGISTRATION_OPTIONS: readonly FieldOption<DisabilityRegistration>[
  *
  * 값이 곧 양상 그룹 id 다. 등록자 경로에서 법정 유형이 하던 일(2단계에 어떤
  * 질문을 띄울지 정하는 일)을 여기서는 참여자가 직접 고른다.
+ *
+ * "해당 없음"(영향 없음) 선택지를 두지 않는다. 갈림길에서 "게임 접근성 문제를
+ * 겪고 있음"을 고르고 들어온 사람에게 "영향 없음"을 다시 묻는 것은 앞뒤가
+ * 맞지 않는다. 비장애인 대조군은 이 연구의 모집 대상이 아니다.
  */
-export const AFFECTED_AREA_OPTIONS: readonly FieldOption<AffectedArea>[] = [
+export const AFFECTED_AREA_OPTIONS: readonly FieldOption<AspectGroup>[] = [
   {
     value: 'visionAspects',
     label: '보는 것 (시각)',
@@ -81,7 +84,8 @@ export const AFFECTED_AREA_OPTIONS: readonly FieldOption<AffectedArea>[] = [
   {
     value: 'cognitiveAspects',
     label: '인지·감각',
-    caption: '예: 감각 과민, 오래 집중하기 어려움, 특정 장면을 견디기 어려움(공포증)',
+    caption:
+      '예: 어려운 용어나 긴 문장을 이해하기 어려움, 새로운 조작을 익히는 데 오래 걸림, 감각 과민',
   },
   {
     value: 'epilepsyAspects',
@@ -97,13 +101,6 @@ export const AFFECTED_AREA_OPTIONS: readonly FieldOption<AffectedArea>[] = [
     value: 'speechAspects',
     label: '말하기·음성 소통',
     caption: '예: 음성 채팅이 어려움, 음성 인식이 내 발음을 못 알아들음',
-  },
-  // 대조군. 다른 항목과 동시에 선택되면 모순이므로 배타 처리한다.
-  {
-    value: 'none',
-    label: '해당 없음',
-    caption: '게임 플레이에 영향을 주는 상태가 없습니다',
-    exclusive: true,
   },
 ];
 
@@ -167,11 +164,31 @@ export const SIDE_OPTIONS: readonly FieldOption<BodySide>[] = [
   { value: 'left', label: '왼쪽' },
 ];
 
+/**
+ * 양쪽을 함께 쓰는 경우가 있는 항목용. 보청기·인공와우가 여기 해당한다.
+ *
+ * 기본 SIDE_OPTIONS 에 양쪽을 넣지 않는 이유: "한쪽 손을 쓰기 어려움"이나
+ * "한쪽 눈이 보이지 않음"은 정의상 한쪽이고, 양쪽인 경우는 별도 선택지가
+ * 따로 있다. 거기에 양쪽을 띄우면 같은 사실을 두 군데로 답할 수 있게 된다.
+ */
+export const SIDE_OPTIONS_WITH_BOTH: readonly FieldOption<BodySide>[] = [
+  { value: 'right', label: '오른쪽' },
+  { value: 'left', label: '왼쪽' },
+  { value: 'both', label: '양쪽' },
+];
+
 /* ── 2단계 — 양상 그룹 ─────────────────────────────────────────────────────── */
 
 export interface AspectOption extends FieldOption<string> {
-  /** true 면 선택 시 오른쪽/왼쪽 라디오가 인라인으로 나타난다. */
+  /** true 면 선택 시 좌우 라디오가 인라인으로 나타난다. */
   needsSide?: boolean;
+  /** needsSide 와 함께 쓴다. true 면 좌우에 "양쪽"을 더한다. */
+  allowBothSides?: boolean;
+  /**
+   * 좌우 질문의 문구를 이 항목에 맞게 바꾼다.
+   * "어느 쪽인가요?"만으로는 들리는 쪽인지 안 들리는 쪽인지 알 수 없다.
+   */
+  sideLegend?: string;
 }
 
 export interface AspectGroupSpec {
@@ -211,20 +228,49 @@ const ASPECT_GROUPS: readonly AspectGroupSpec[] = [
     id: 'visionAspects',
     title: '시각 — 게임 화면에서 겪는 어려움',
     hint: '해당되는 것을 모두 선택해 주세요.',
+    /*
+     * "눈 자체가 안 보이는 것"과 "눈은 보이는데 시야의 일부가 가려진 것"을
+     * 갈라 놓는다. 전에는 둘을 "화면 한쪽이 보이지 않음"으로 뭉쳤는데,
+     * 게임 조작에서 전혀 다른 문제다 — 한쪽 눈을 잃으면 거리감·입체감이
+     * 무너지고, 시야 결손은 두 눈을 다 떠도 같은 방향이 통째로 비어 있다.
+     * 필요한 대체 수단도 다르다.
+     */
     options: [
-      { value: 'blind', label: '화면이 전혀 보이지 않음 (전맹)' },
+      { value: 'blind', label: '양쪽 눈 모두 화면이 전혀 보이지 않음 (전맹)' },
+      {
+        value: 'oneEyeBlind',
+        label: '한쪽 눈이 보이지 않음',
+        caption: '반대쪽 눈은 보입니다. 거리감·입체감을 판단하기 어려울 수 있습니다',
+        needsSide: true,
+        sideLegend: '보이지 않는 쪽은 어디인가요?',
+      },
       { value: 'lowVision', label: '안경·렌즈로 교정해도 흐리게 보임 (저시력)' },
       { value: 'smallText', label: '작은 글자를 읽기 어려움' },
+      {
+        value: 'diplopia',
+        label: '사물이 겹쳐 보임 (복시)',
+        caption: '하나의 대상이 둘로 보이거나 윤곽이 겹쳐 보입니다',
+      },
       { value: 'colorVision', label: '색을 구분하기 어려움 (색약·색맹)' },
       { value: 'lowContrast', label: '배경과 사물의 밝기 차이가 작으면 구분하기 어려움' },
       { value: 'glare', label: '밝은 화면이나 흰 배경이 번져 보임 (빛 번짐)' },
       {
-        value: 'hemifieldLoss',
-        label: '화면 한쪽이 보이지 않음 (한쪽 시야 결손)',
+        value: 'hemianopia',
+        label: '두 눈 모두 시야의 좌우 한쪽이 가려짐 (반맹)',
+        caption: '한쪽 눈을 가려 봐도 같은 방향이 보이지 않습니다',
         needsSide: true,
+        sideLegend: '가려진 쪽은 어디인가요?',
       },
-      { value: 'peripheralLoss', label: '화면 가장자리가 보이지 않음 (양쪽 주변 시야 결손)' },
-      { value: 'centralLoss', label: '화면 가운데가 보이지 않음 (중심 시야 결손)' },
+      {
+        value: 'peripheralLoss',
+        label: '시야 가장자리가 좁아짐 (터널 시야)',
+        caption: '가운데는 보이지만 주변이 잘려 보입니다',
+      },
+      {
+        value: 'centralLoss',
+        label: '시야 가운데가 보이지 않음 (중심 시야 결손)',
+        caption: '주변은 보이지만 똑바로 보는 지점이 비어 보입니다',
+      },
       { value: 'nystagmus', label: '화면의 한 점을 계속 보기 어려움 (시야 흔들림)' },
       OTHER_OPTION,
     ],
@@ -233,13 +279,38 @@ const ASPECT_GROUPS: readonly AspectGroupSpec[] = [
     id: 'hearingAspects',
     title: '청각 — 게임 소리에서 겪는 어려움',
     hint: '해당되는 것을 모두 선택해 주세요.',
+    /*
+     * 보청기와 인공와우를 한 항목으로 묶지 않는다. 소리가 전달되는 방식이
+     * 달라서 게임 소리를 어떻게 듣는지가 다르고, 한쪽만 쓰는지 양쪽을 쓰는지도
+     * 사람마다 다르다. 한쪽은 보청기, 다른 쪽은 인공와우인 경우도 있으므로
+     * 각각 따로 고르고 각각 좌우를 받는다.
+     */
     options: [
-      { value: 'deaf', label: '소리가 전혀 들리지 않음 (전농)' },
+      { value: 'deaf', label: '양쪽 모두 소리가 전혀 들리지 않음 (전농)' },
+      {
+        value: 'oneSideDeaf',
+        label: '한쪽 귀가 들리지 않음',
+        caption: '반대쪽 귀는 들립니다',
+        needsSide: true,
+        sideLegend: '들리지 않는 쪽은 어디인가요?',
+      },
       { value: 'hardOfHearing', label: '작은 소리나 특정 높낮이를 듣기 어려움 (난청)' },
-      { value: 'oneSided', label: '한쪽 귀만 들림', needsSide: true },
       { value: 'direction', label: '소리가 나는 방향을 알기 어려움' },
       { value: 'noiseMix', label: '여러 소리가 섞이면 필요한 소리를 골라 듣기 어려움' },
-      { value: 'device', label: '보청기·인공와우를 사용함' },
+      {
+        value: 'hearingAid',
+        label: '보청기를 사용함',
+        needsSide: true,
+        allowBothSides: true,
+        sideLegend: '보청기를 쓰는 쪽은 어디인가요?',
+      },
+      {
+        value: 'cochlearImplant',
+        label: '인공와우를 사용함',
+        needsSide: true,
+        allowBothSides: true,
+        sideLegend: '인공와우를 쓰는 쪽은 어디인가요?',
+      },
       { value: 'tinnitus', label: '이명이 있어 소리 신호를 구분하기 어려움' },
       OTHER_OPTION,
     ],
@@ -267,11 +338,33 @@ const ASPECT_GROUPS: readonly AspectGroupSpec[] = [
     id: 'cognitiveAspects',
     title: '인지·감각 — 정보 처리에서 겪는 어려움',
     hint: '해당되는 것을 모두 선택해 주세요.',
+    /*
+     * 게임은 글로 설명하는 매체다. 튜토리얼, 퀘스트 안내, 아이템 설명이
+     * 모두 문장이라 "읽고 이해하는 일"에서 막히면 조작 능력과 무관하게
+     * 진행이 멈춘다. 그래서 반응속도·집중과 별개로 용어·문장 길이·학습
+     * 시간을 따로 받는다. 대체 수단이 서로 다르다 — 쉬운 말로 바꾸기,
+     * 문장을 나누기, 연습 시간을 더 주기.
+     */
     options: [
       { value: 'reactionSpeed', label: '화면 변화에 빠르게 반응하기 어려움' },
       { value: 'suddenPrompt', label: '갑자기 나타나는 화면 신호를 놓치기 쉬움' },
       { value: 'timeLimit', label: '제한 시간이 있으면 압박을 크게 느낌' },
+      {
+        value: 'difficultWords',
+        label: '어려운 낱말이나 전문 용어가 나오면 이해하기 어려움',
+        caption: '게임 용어, 한자어, 줄임말 등',
+      },
+      {
+        value: 'longSentence',
+        label: '문장이 길어지면 무슨 뜻인지 파악하기 어려움',
+        caption: '짧게 끊어 주면 이해할 수 있습니다',
+      },
       { value: 'complexInstruction', label: '여러 단계로 된 지시를 이해하기 어려움' },
+      {
+        value: 'learningTime',
+        label: '새로운 조작이나 규칙을 익히는 데 시간이 오래 걸림',
+        caption: '익히고 나면 할 수 있지만 연습 시간이 더 필요합니다',
+      },
       { value: 'manyElements', label: '화면에 정보가 많으면 무엇을 봐야 할지 찾기 어려움' },
       { value: 'sustainedFocus', label: '오래 집중하기 어려움' },
       { value: 'memory', label: '조작 방법이나 진행 상황을 기억하기 어려움' },
@@ -362,7 +455,7 @@ export const DISABILITY_COPY = {
     areasHint:
       '해당되는 영역을 모두 선택해 주세요. 선택하신 영역에 대해서만 2단계에서 자세히 여쭤봅니다. 진단을 받지 않으셨어도, 실제로 겪는 어려움을 기준으로 고르시면 됩니다.',
     areasMissing:
-      '영향을 주는 영역을 하나 이상 선택해 주세요. 해당되는 것이 없으면 "해당 없음"을 골라주세요.',
+      '영향을 주는 영역을 하나 이상 선택해 주세요. 딱 맞는 영역이 없으면 가장 가까운 영역을 고르고, 2단계의 "기타(직접 입력)"에 적어주세요.',
     legend: '게임 플레이에 영향이 있다고 생각되는 장애 유형',
     hint: '해당되는 것을 모두 선택해 주세요. 여러 개 선택하실 수 있습니다.',
     secondaryLegend: '그 외 장애 유형',

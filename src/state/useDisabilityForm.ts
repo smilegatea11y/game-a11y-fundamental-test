@@ -5,10 +5,8 @@ import {
   ASPECT_GROUP_ORDER,
   DISABILITY_COPY as C,
 } from '../data/disabilityFields';
-import { AFFECTED_AREA_OPTIONS } from '../data/disabilityFields';
 import { EMPTY_DISABILITY_INFO, sideKey } from '../types/disability';
 import type {
-  AffectedArea,
   AspectGroup,
   BodySide,
   DisabilityInfo,
@@ -30,10 +28,6 @@ export const disabilityDomId = {
   aspectSide: (group: AspectGroup, aspect: string) => `dis-side-${group}-${aspect}`,
   narrative: 'dis-narrative',
 } as const;
-
-const EXCLUSIVE_AREAS = new Set<AffectedArea>(
-  AFFECTED_AREA_OPTIONS.filter((o) => o.exclusive).map((o) => o.value),
-);
 
 /**
  * 더 이상 묻지 않는 그룹의 2단계 값을 버린다.
@@ -78,7 +72,7 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
   const activeGroups = useMemo<AspectGroup[]>(() => {
     const needed =
       value.registration === 'unregistered'
-        ? new Set(value.affectedAreas.filter((a): a is AspectGroup => a !== 'none'))
+        ? new Set(value.affectedAreas)
         : new Set(value.types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
     return ASPECT_GROUP_ORDER.filter((g) => needed.has(g));
   }, [value.registration, value.types, value.affectedAreas]);
@@ -101,30 +95,24 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
       };
       const stillNeeded =
         registration === 'unregistered'
-          ? new Set(cleared.affectedAreas.filter((a): a is AspectGroup => a !== 'none'))
+          ? new Set(cleared.affectedAreas)
           : new Set(cleared.types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
       return pruneAspects(cleared, stillNeeded);
     });
   }, []);
 
-  /** 미등록자 경로 — 영역을 켜고 끈다. "해당 없음"은 배타 선택. */
-  const toggleAffectedArea = useCallback((area: AffectedArea, checked: boolean) => {
+  /**
+   * 미등록자 경로 — 영역을 켜고 끈다.
+   *
+   * 끄면 그 영역의 2단계 값도 함께 버린다. 배타 선택은 없다 —
+   * "영향 없음" 선택지를 두지 않기로 했으므로 서로 배타인 짝이 없다.
+   */
+  const toggleAffectedArea = useCallback((area: AspectGroup, checked: boolean) => {
     setValue((prev) => {
-      let affectedAreas: AffectedArea[];
-      if (!checked) {
-        affectedAreas = prev.affectedAreas.filter((a) => a !== area);
-      } else if (EXCLUSIVE_AREAS.has(area)) {
-        affectedAreas = [area];
-      } else {
-        affectedAreas = [
-          ...prev.affectedAreas.filter((a) => !EXCLUSIVE_AREAS.has(a)),
-          area,
-        ];
-      }
-      const stillNeeded = new Set(
-        affectedAreas.filter((a): a is AspectGroup => a !== 'none'),
-      );
-      return pruneAspects({ ...prev, affectedAreas }, stillNeeded);
+      const affectedAreas = checked
+        ? [...prev.affectedAreas, area]
+        : prev.affectedAreas.filter((a) => a !== area);
+      return pruneAspects({ ...prev, affectedAreas }, new Set(affectedAreas));
     });
   }, []);
 

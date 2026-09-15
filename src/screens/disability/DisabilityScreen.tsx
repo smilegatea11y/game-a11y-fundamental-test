@@ -18,6 +18,7 @@ import {
   SECONDARY_TYPE_OPTIONS,
   SEVERITY_OPTIONS,
   SIDE_OPTIONS,
+  SIDE_OPTIONS_WITH_BOTH,
 } from '../../data/disabilityFields';
 import { nextStepLabel } from '../../lib/sessionStore';
 import { useScreenSetup } from '../../lib/useScreenSetup';
@@ -274,9 +275,11 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
                         <OptionGroup
                           type="radio"
                           groupId={domId.aspectSide(group, aspect)}
-                          legend={`${option.label} — ${C.step2.sideLegend}`}
+                          legend={`${option.label} — ${option.sideLegend ?? C.step2.sideLegend}`}
                           error={form.errorFor(`aspect-side-${group}-${aspect}`)}
-                          options={SIDE_OPTIONS}
+                          options={
+                            option.allowBothSides ? SIDE_OPTIONS_WITH_BOTH : SIDE_OPTIONS
+                          }
                           selected={
                             form.value.aspectSideByKey[sideKey(group, aspect)] === undefined
                               ? []
