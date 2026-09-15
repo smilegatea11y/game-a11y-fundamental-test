@@ -110,6 +110,16 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
             {disability !== null ? (
               <>
                 <div className="detail-list__row">
+                  <dt>장애 정도</dt>
+                  <dd>
+                    {disability.severity === 'severe'
+                      ? '심한 장애 (중증)'
+                      : disability.severity === 'mild'
+                        ? '심하지 않은 장애 (경증)'
+                        : '(미입력)'}
+                  </dd>
+                </div>
+                <div className="detail-list__row">
                   <dt>장애 유형</dt>
                   <dd>
                     {disability.types.length > 0
@@ -139,7 +149,7 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
             {deviceSpec !== null ? (
               <>
                 <div className="detail-list__row">
-                  <dt>주 입력장치</dt>
+                  <dt>게임할 때 쓰는 입력장치</dt>
                   <dd>
                     {deviceSpec.inputDevices.length > 0
                       ? deviceSpec.inputDevices.join(', ')
@@ -147,19 +157,11 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
                   </dd>
                 </div>
                 <div className="detail-list__row">
-                  <dt>게임용 보조기기</dt>
-                  <dd>
-                    {deviceSpec.gameAssistiveUse === 'gameSpecific'
-                      ? `게임 전용 — ${deviceSpec.gameAssistiveNames || '명칭 미입력'}`
-                      : deviceSpec.gameAssistiveUse === 'sameAsDaily'
-                        ? '평소 쓰는 것과 동일'
-                        : deviceSpec.gameAssistiveUse === 'none'
-                          ? '사용하지 않음'
-                          : '(미입력)'}
-                  </dd>
+                  <dt>화면 모델명</dt>
+                  <dd>{deviceSpec.screenModelName || '(비워둠 — 선택 항목)'}</dd>
                 </div>
                 <div className="detail-list__row">
-                  <dt>그 외 게임 기기</dt>
+                  <dt>그 외 기기·보조기기</dt>
                   <dd>
                     {deviceSpec.extraDevices.length > 0
                       ? deviceSpec.extraDevices.map((d) => d.modelName).join(', ')

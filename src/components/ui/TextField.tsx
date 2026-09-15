@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 /**
  * 검증 상태.
  *
@@ -16,6 +17,11 @@ interface TextFieldProps {
   onBlur?: () => void;
   /** 입력 예시나 보충 설명. aria-describedby 로 연결된다. */
   hint?: string;
+  /**
+   * 힌트 다음 줄에 붙는 보충 표시. 코드 서식처럼 마크업이 필요한 경우에 쓴다.
+   * 입력란 **위**에 놓이므로, 형식이 정해진 값의 예시를 치기 전에 볼 수 있다.
+   */
+  hintExtra?: ReactNode;
   /** 오류 메시지. 있으면 aria-invalid 가 켜지고 describedby 에 추가된다. */
   error?: string | null;
   /** 형식 검증 상태. 'valid' 면 초록 체크를 보여준다. */
@@ -23,6 +29,12 @@ interface TextFieldProps {
   /** status === 'valid' 일 때 보여줄 문구 */
   validMessage?: string;
   required?: boolean;
+  /**
+   * 라벨을 화면에서만 감춘다(접근성 트리에는 남는다).
+   * 바로 위 선택지가 이미 같은 말을 하고 있어 눈으로는 중복인데,
+   * 라벨을 없애면 입력란의 접근성 이름이 사라지는 경우에 쓴다.
+   */
+  labelHidden?: boolean;
   type?: 'text' | 'tel' | 'email';
   inputMode?: 'text' | 'tel' | 'email';
   /** 입력 최대 길이. 형식이 고정된 값(고유 ID)에 쓴다. */
@@ -58,16 +70,19 @@ export function TextField({
   onChange,
   onBlur,
   hint,
+  hintExtra,
   error,
   status = 'none',
   validMessage,
   required = false,
+  labelHidden = false,
   type = 'text',
   inputMode,
   maxLength,
   autoComplete = 'off',
 }: TextFieldProps) {
   const hintId = `${id}-hint`;
+  const hintExtraId = `${id}-hint-extra`;
   const errorId = `${id}-error`;
   const validId = `${id}-valid`;
 
@@ -75,6 +90,7 @@ export function TextField({
 
   const describedBy = [
     hint ? hintId : null,
+    hintExtra ? hintExtraId : null,
     error ? errorId : null,
     showValid ? validId : null,
   ]
@@ -83,7 +99,7 @@ export function TextField({
 
   return (
     <div className="field">
-      <label className="field__label" htmlFor={id}>
+      <label className={labelHidden ? 'visually-hidden' : 'field__label'} htmlFor={id}>
         {label}
         {required ? (
           <>
@@ -98,6 +114,12 @@ export function TextField({
       {hint ? (
         <p className="field__hint" id={hintId}>
           {hint}
+        </p>
+      ) : null}
+
+      {hintExtra ? (
+        <p className="field__hint" id={hintExtraId}>
+          {hintExtra}
         </p>
       ) : null}
 

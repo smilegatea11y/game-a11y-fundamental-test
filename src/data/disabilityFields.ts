@@ -28,33 +28,45 @@ import type {
 /* ── 1단계 — 법정 유형 ─────────────────────────────────────────────────────── */
 
 /**
- * 기본 노출 7개.
+ * 기본 노출 7개. (장애인복지법 시행령 별표1)
  *
- * 뇌전증장애는 법적 분류상 "신체 내부 기관장애"지만 점멸광 발작 위험이
- * 게임 접근성과 직결되므로 예외적으로 기본 노출에 넣었다. (스펙 3-3)
+ * 뇌전증장애는 법적 분류상 "신체적 장애 > 내부기관의 장애"에 속하는 독립된
+ * 법정 유형이다. 점멸광 발작 위험이 게임 접근성과 직결되므로 내부기관 장애
+ * 중에서는 예외적으로 기본 노출에 넣었다. (스펙 3-3)
  *
- * 전부 revealsDetail 이다 — 체크하면 그 자리에 중증/경증 라디오가 나타난다.
+ * 지적장애와 자폐성장애는 시행령상 각각 독립된 유형이지만, 시행규칙 별표1의
+ * 중분류에서는 둘 다 "정신적 장애 > 발달장애"에 묶인다. 한쪽으로 합치지
+ * 않는 이유는 복지카드에 둘 중 하나로 적히기 때문이다 — 합치면 참여자가
+ * 자기 카드에 적힌 이름을 화면에서 찾을 수 없다. 대신 캡션으로 관계를 알린다.
+ * (2단계 질문은 어차피 같은 cognitiveAspects 그룹 하나로 합쳐진다.)
+ *
+ * 장애 정도는 여기서 묻지 않는다. 사람당 하나이므로 유형 위에서 따로 받는다.
  */
 export const PRIMARY_TYPE_OPTIONS: readonly FieldOption<DisabilityType>[] = [
-  { value: 'vision', label: '시각장애', revealsDetail: true },
-  { value: 'hearing', label: '청각장애', revealsDetail: true },
-  { value: 'physical', label: '지체장애', revealsDetail: true },
-  { value: 'brainLesion', label: '뇌병변장애', revealsDetail: true },
-  { value: 'intellectual', label: '지적장애', revealsDetail: true },
-  { value: 'autism', label: '자폐성장애', revealsDetail: true },
-  { value: 'epilepsy', label: '뇌전증장애', revealsDetail: true },
+  { value: 'vision', label: '시각장애' },
+  { value: 'hearing', label: '청각장애' },
+  { value: 'physical', label: '지체장애' },
+  { value: 'brainLesion', label: '뇌병변장애' },
+  { value: 'intellectual', label: '지적장애', caption: '발달장애에 속하는 유형입니다' },
+  { value: 'autism', label: '자폐성장애', caption: '발달장애에 속하는 유형입니다' },
+  { value: 'epilepsy', label: '뇌전증장애' },
 ];
 
-/** "그 외 유형 보기"로 접어두는 8개. 삭제가 아니라 노출 우선순위 조정이다. */
+/**
+ * "그 외 유형 보기"로 접어두는 9개. 삭제가 아니라 노출 우선순위 조정이다.
+ * 기본 7개와 합쳐 장애인복지법 시행령 별표1의 16개 법정 유형 전부를 담는다.
+ */
 export const SECONDARY_TYPE_OPTIONS: readonly FieldOption<DisabilityType>[] = [
-  { value: 'speech', label: '언어장애', revealsDetail: true },
-  { value: 'facial', label: '안면장애', revealsDetail: true },
-  { value: 'kidney', label: '신장장애', revealsDetail: true },
-  { value: 'heart', label: '심장장애', revealsDetail: true },
-  { value: 'liver', label: '간장애', revealsDetail: true },
-  { value: 'respiratory', label: '호흡기장애', revealsDetail: true },
-  { value: 'ostomy', label: '장루·요루장애', revealsDetail: true },
-  { value: 'mental', label: '정신장애', revealsDetail: true },
+  { value: 'speech', label: '언어장애' },
+  { value: 'facial', label: '안면장애' },
+  { value: 'kidney', label: '신장장애' },
+  { value: 'heart', label: '심장장애' },
+  { value: 'liver', label: '간장애' },
+  { value: 'respiratory', label: '호흡기장애' },
+  { value: 'ostomy', label: '장루·요루장애' },
+  // 2026-05-01 시행으로 신설된 16번째 유형.
+  { value: 'pancreas', label: '췌장장애' },
+  { value: 'mental', label: '정신장애' },
 ];
 
 export const ALL_TYPE_OPTIONS = [...PRIMARY_TYPE_OPTIONS, ...SECONDARY_TYPE_OPTIONS];
@@ -105,6 +117,7 @@ export const ASPECT_GROUP_BY_TYPE: Record<DisabilityType, AspectGroup> = {
   liver: 'internalAspects',
   respiratory: 'internalAspects',
   ostomy: 'internalAspects',
+  pancreas: 'internalAspects',
   speech: 'speechAspects',
   facial: 'speechAspects',
 };
@@ -263,9 +276,10 @@ export const DISABILITY_COPY = {
     secondaryLegend: '그 외 장애 유형',
     secondarySummary: '그 외 유형 보기',
     severityLegend: '장애 정도',
-    severityHint: '복지카드에 표시된 장애 정도를 참고해 주세요.',
+    severityHint:
+      '복지카드에 적힌 그대로 골라주세요. 2019년 장애등급제(1~6급) 폐지 이후로는 두 가지 중 하나로만 표기됩니다. 유형을 여러 개 고르셔도 정도는 한 번만 입력하시면 됩니다.',
     typeMissing: '장애 유형을 하나 이상 선택해 주세요.',
-    severityMissing: (typeLabel: string) => `${typeLabel}의 장애 정도를 선택해 주세요.`,
+    severityMissing: '장애 정도를 선택해 주세요.',
   },
 
   step2: {

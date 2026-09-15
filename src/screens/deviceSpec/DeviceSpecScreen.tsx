@@ -10,7 +10,6 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
   AUDIO_OUTPUT_OPTIONS,
   DEVICE_SPEC_COPY as C,
-  GAME_ASSISTIVE_OPTIONS,
   INPUT_DEVICE_OPTIONS,
   OS_OPTIONS,
   REFRESH_RATE_OPTIONS,
@@ -18,6 +17,7 @@ import {
   SCREEN_SIZE_OPTIONS,
   VIEWING_DISTANCE_OPTIONS,
 } from '../../data/deviceSpecFields';
+import { nextStepLabel } from '../../lib/sessionStore';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { deviceSpecDomId as domId, useDeviceSpecForm } from '../../state/useDeviceSpecForm';
 import type { useSession } from '../../state/useSession';
@@ -37,18 +37,6 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
 
   /** 추가 직후 포커스를 옮길 부가 기기 항목. */
   const pendingFocusId = useRef<string | null>(null);
-
-  /*
-   * 3-2 에서 입력한 "평소 보조기기". 게임용 보조기기 질문에서 이어받아 보여준다.
-   * 평소 보조기기가 없으면 "평소 쓰는 것을 그대로 씁니다" 선택지를 숨긴다 —
-   * 고를 수 없는 선택지를 비활성으로 남기면 찾기만 어려워진다.
-   */
-  const basicInfo = session.draft?.basicInfo ?? null;
-  const usesDailyAssistive = basicInfo?.dailyAssistiveDeviceUse === 'yes';
-  const dailyAssistiveNames = basicInfo?.dailyAssistiveDeviceNames.trim() ?? '';
-  const gameAssistiveOptions = GAME_ASSISTIVE_OPTIONS.filter(
-    (option) => option.value !== 'sameAsDaily' || usesDailyAssistive,
-  );
 
   /*
    * 즉시 저장. 각 onToggle 안에서 "다음 값"을 손으로 계산하지 않는다.
@@ -136,8 +124,6 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
       {/* 화면 구조 변화 안내 전용 영역. 항상 DOM 에 있어야 한다. */}
       <LiveRegion message={announcement} />
 
-      <p className="section__lead">{C.intro}</p>
-
       <form onSubmit={handleSubmit} noValidate>
         <ErrorSummary
           ref={errorSummaryRef}
@@ -181,6 +167,18 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
             options={SCREEN_SIZE_OPTIONS}
             selected={form.value.screenSize === null ? [] : [form.value.screenSize]}
             onToggle={(v, checked) => checked && form.setField('screenSize', v)}
+          />
+
+          {/*
+            모델명은 선택 입력이다. 인치를 모르는 사람이 대부분이고,
+            모델명 하나면 인치·해상도·주사율을 나중에 다 확인할 수 있다.
+          */}
+          <TextField
+            id={domId.screenModelName}
+            label={C.screenSize.modelLabel}
+            hint={C.screenSize.modelHint}
+            value={form.value.screenModelName}
+            onChange={(v) => form.setField('screenModelName', v)}
           />
 
           <OptionGroup
@@ -262,50 +260,6 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
           />
         </section>
 
-        {/* ── 게임용 보조기기 ───────────────────────────────────────────── */}
-        <section className="section" aria-labelledby="dev-assistive-heading">
-          <h2 className="section__heading" id="dev-assistive-heading">
-            {C.gameAssistive.heading}
-          </h2>
-
-          <OptionGroup
-            type="radio"
-            groupId={domId.gameAssistive}
-            legend={C.gameAssistive.legend}
-            hint={C.gameAssistive.hint}
-            error={form.errorFor('gameAssistiveUse')}
-            options={gameAssistiveOptions}
-            selected={form.value.gameAssistiveUse === null ? [] : [form.value.gameAssistiveUse]}
-            onToggle={(v, checked) => checked && form.setGameAssistiveUse(v)}
-            renderRevealed={(v) =>
-              v === 'gameSpecific' ? (
-                <TextField
-                  id={domId.gameAssistiveNames}
-                  label={C.gameAssistive.namesLabel}
-                  hint={C.gameAssistive.namesHint}
-                  value={form.value.gameAssistiveNames}
-                  onChange={(text) => form.setField('gameAssistiveNames', text)}
-                  error={form.errorFor('gameAssistiveNames')}
-                  required
-                />
-              ) : null
-            }
-          />
-
-          {/*
-           * "평소 쓰는 것을 그대로 씁니다"를 고르면 3-2 값을 읽기 전용으로 보여준다.
-           * 여기서 다시 입력받으면 같은 질문을 두 번 하는 셈이다. (스펙 3-4)
-           */}
-          {form.value.gameAssistiveUse === 'sameAsDaily' ? (
-            <dl className="detail-list">
-              <div className="detail-list__row">
-                <dt>{C.gameAssistive.dailyCarriedLabel}</dt>
-                <dd>{dailyAssistiveNames || C.gameAssistive.dailyCarriedEmpty}</dd>
-              </div>
-            </dl>
-          ) : null}
-        </section>
-
         {/* ── 부가 기기 (반복 폼) ───────────────────────────────────────── */}
         <section className="section" aria-labelledby="dev-extra-heading">
           <h2 className="section__heading" id="dev-extra-heading">
@@ -346,7 +300,7 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
 
         <div className="actions">
           <button type="submit" className="btn btn--primary" aria-describedby="dev-submit-hint">
-            저장하고 다음 단계로
+            {nextStepLabel('device')}
           </button>
           <p className="actions__hint" id="dev-submit-hint">
             {form.isComplete ? C.submitHint.ready : C.submitHint.remaining(form.errors.length)}

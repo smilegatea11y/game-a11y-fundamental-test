@@ -14,6 +14,12 @@ export interface FieldOption<T extends string> {
   revealsDetail?: boolean;
   /** 다중선택에서 다른 값과 함께 고를 수 없는 항목 */
   exclusive?: boolean;
+  /**
+   * 선택지 라벨 아래에 항상 보이는 한 줄 설명.
+   * 호버 툴팁을 쓰지 않는다 — 마우스가 없으면 열 수 없고 스크린리더에서
+   * 읽히는 시점이 일정하지 않다. 이 캡션은 선택지의 aria-describedby 로도 연결된다.
+   */
+  caption?: string;
 }
 
 interface OptionGroupProps<T extends string> {
@@ -107,6 +113,7 @@ export function OptionGroup<T extends string>({
       <div className="radio-group__options">
         {options.map((option) => {
           const id = `${groupId}-${option.value}`;
+          const captionId = `${id}-caption`;
           const isSelected = selected.includes(option.value);
           const showRevealed = Boolean(option.revealsDetail) && isSelected && renderRevealed;
 
@@ -119,10 +126,21 @@ export function OptionGroup<T extends string>({
                 value={option.value}
                 checked={isSelected}
                 onChange={(event) => onToggle(option.value, event.target.checked)}
-                aria-describedby={describedBy || undefined}
+                aria-describedby={
+                  [option.caption ? captionId : null, describedBy || null]
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
                 aria-invalid={error ? 'true' : undefined}
               />
               <label htmlFor={id}>{option.label}</label>
+
+              {/* 선택지별 캡션. 라벨과 같은 열(2열)에 붙어 어느 선택지의 설명인지 드러난다. */}
+              {option.caption ? (
+                <p className="radio-option__description" id={captionId}>
+                  {option.caption}
+                </p>
+              ) : null}
 
               {/*
                * 조건부 입력란. 트리거 바로 다음에 두어 다음 Tab 이 여기로 들어온다.

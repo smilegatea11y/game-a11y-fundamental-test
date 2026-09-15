@@ -16,13 +16,13 @@ import {
   SECONDARY_TYPE_OPTIONS,
   SEVERITY_OPTIONS,
   SIDE_OPTIONS,
-  TYPE_LABEL,
 } from '../../data/disabilityFields';
+import { nextStepLabel } from '../../lib/sessionStore';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { disabilityDomId as domId, useDisabilityForm } from '../../state/useDisabilityForm';
 import type { useSession } from '../../state/useSession';
 import { sideKey } from '../../types/disability';
-import type { AspectGroup, DisabilityType } from '../../types/disability';
+import type { AspectGroup } from '../../types/disability';
 import '../consent/consent.css';
 
 interface DisabilityScreenProps {
@@ -105,22 +105,6 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
     onComplete();
   };
 
-  /** 유형 체크 시 그 자리에 나타나는 중증/경증 라디오. */
-  const renderSeverity = (type: DisabilityType) => (
-    <OptionGroup
-      type="radio"
-      groupId={domId.severity(type)}
-      legend={`${TYPE_LABEL[type]} ${C.step1.severityLegend}`}
-      hint={C.step1.severityHint}
-      error={form.errorFor(`severity-${type}`)}
-      options={SEVERITY_OPTIONS}
-      selected={
-        form.value.severityByType[type] === undefined ? [] : [form.value.severityByType[type]!]
-      }
-      onToggle={(v, checked) => checked && form.setSeverity(type, v)}
-    />
-  );
-
   return (
     <main className="page" id="main">
       <p className="page__step">3단계 / 장애 정보</p>
@@ -151,6 +135,21 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
             {C.step1.heading}
           </h2>
 
+          {/*
+            장애 정도를 유형보다 먼저, 한 번만 묻는다.
+            복지카드에 정도가 하나만 적히므로 유형마다 반복해 물을 것이 아니다.
+          */}
+          <OptionGroup
+            type="radio"
+            groupId={domId.severity}
+            legend={C.step1.severityLegend}
+            hint={C.step1.severityHint}
+            error={form.errorFor('severity')}
+            options={SEVERITY_OPTIONS}
+            selected={form.value.severity === null ? [] : [form.value.severity]}
+            onToggle={(v, checked) => checked && form.setSeverity(v)}
+          />
+
           <OptionGroup
             type="checkbox"
             groupId={domId.primaryTypes}
@@ -160,7 +159,6 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
             options={PRIMARY_TYPE_OPTIONS}
             selected={form.value.types}
             onToggle={form.toggleType}
-            renderRevealed={renderSeverity}
           />
 
           {/*
@@ -180,7 +178,6 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
                 options={SECONDARY_TYPE_OPTIONS}
                 selected={form.value.types}
                 onToggle={form.toggleType}
-                renderRevealed={renderSeverity}
               />
             </div>
           </details>
@@ -285,7 +282,7 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
 
         <div className="actions">
           <button type="submit" className="btn btn--primary" aria-describedby="dis-submit-hint">
-            저장하고 다음 단계로
+            {nextStepLabel('disability')}
           </button>
           <p className="actions__hint" id="dis-submit-hint">
             {form.isComplete

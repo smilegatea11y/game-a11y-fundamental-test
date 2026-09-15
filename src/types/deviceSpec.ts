@@ -31,19 +31,24 @@ export type InputDevice =
   | 'touch'
   | 'other';
 
-export type ViewingDistance = 'under50' | 'from50to100' | 'over100';
+/**
+ * 화면과의 거리.
+ *
+ * 구간을 "팔 하나 뻗은 거리(약 50~70cm)"에 맞춰 끊는다. 자로 재라고 할 것이
+ * 아니라면 기준점이 구간 한가운데를 가로지르면 안 된다 — 같은 자세로 앉은
+ * 두 사람이 서로 다른 칸을 고르게 된다.
+ */
+export type ViewingDistance = 'under50' | 'from50to70' | 'over70';
 
 export type AudioOutput = 'builtInSpeaker' | 'externalSpeaker' | 'wiredHeadset' | 'wirelessHeadset' | 'noSound';
 
 /**
- * 게임할 때 쓰는 보조기기.
+ * 그 외 기기·보조기기 — 모델명만 받는다. 모델명에 기기 종류가 이미 담긴다.
  *
- * 3-2 의 "평소(일상·컴퓨터) 보조기기"와 구분된다. NVDA 처럼 일상에도 게임에도
- * 쓰는 경우가 있으므로 `sameAsDaily` 를 둬서 참여자가 헷갈리지 않게 한다.
+ * 게임용 보조기기를 따로 묻던 질문을 여기로 합쳤다. 조작에 쓰는 보조기기는
+ * 대부분 입력장치 목록(적응형 컨트롤러·스위치·아이트래커·헤드 마우스)에
+ * 이미 있어서, 같은 기기를 두 곳에 적게 만드는 질문이었다.
  */
-export type GameAssistiveUse = 'gameSpecific' | 'sameAsDaily' | 'none';
-
-/** 부가 기기 — 모델명만 받는다. 모델명에 기기 종류가 이미 담긴다. */
 export interface ExtraDevice {
   /** 반복 폼 항목 식별자. DOM id 와 React key 에 쓴다. */
   id: string;
@@ -56,6 +61,8 @@ export interface DeviceSpec {
   operatingSystemOther: string;
 
   screenSize: ScreenSize | null;
+  /** 모니터·노트북 모델명 (선택). 인치를 모를 때 이것으로 확인할 수 있다. */
+  screenModelName: string;
 
   resolution: Resolution | null;
   resolutionOther: string;
@@ -69,12 +76,7 @@ export interface DeviceSpec {
 
   audioOutput: AudioOutput | null;
 
-  /* ── 게임용 보조기기 ──────────────────────────────────────────────────── */
-  gameAssistiveUse: GameAssistiveUse | null;
-  /** gameAssistiveUse === 'gameSpecific' 일 때 필수. */
-  gameAssistiveNames: string;
-
-  /* ── 부가 기기 (선택, 여러 대) ────────────────────────────────────────── */
+  /* ── 그 외 기기·보조기기 (선택, 여러 대) ──────────────────────────────── */
   extraDevices: ExtraDevice[];
 }
 
@@ -82,6 +84,7 @@ export const EMPTY_DEVICE_SPEC: DeviceSpec = {
   operatingSystem: null,
   operatingSystemOther: '',
   screenSize: null,
+  screenModelName: '',
   resolution: null,
   resolutionOther: '',
   refreshRate: null,
@@ -89,7 +92,5 @@ export const EMPTY_DEVICE_SPEC: DeviceSpec = {
   inputDeviceOther: '',
   viewingDistance: null,
   audioOutput: null,
-  gameAssistiveUse: null,
-  gameAssistiveNames: '',
   extraDevices: [],
 };

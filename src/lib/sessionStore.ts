@@ -36,7 +36,7 @@ const LEGACY_KEYS = ['gaft.consent'];
  * 다시 시작한다. 다음 화면(기본정보 등)의 필드를 SessionDraft 에 추가할 때
  * 함께 올릴 것.
  */
-export const SESSION_SCHEMA_VERSION = 4;
+export const SESSION_SCHEMA_VERSION = 5;
 
 /** 로그가 무한히 커지지 않게 제한한다. 테스트 단계에서 항목이 빠르게 늘어난다. */
 const MAX_LOG_ENTRIES = 400;
@@ -70,6 +70,22 @@ export const STEP_LABEL: Record<SessionStep, string> = {
   tests: '역량 테스트',
   submit: '결과 제출',
 };
+
+/**
+ * 화면에 보여줄 단계 번호와 전체 단계 수.
+ *
+ * 제출 버튼의 "(2/6)" 표시와 화면 상단의 "2단계 / …"가 같은 곳에서 나와야
+ * 서로 어긋나지 않는다. 단계를 추가·삭제하면 STEP_ORDER 만 고치면 된다.
+ */
+export function stepProgress(step: SessionStep): { current: number; total: number } {
+  return { current: STEP_ORDER.indexOf(step) + 1, total: STEP_ORDER.length };
+}
+
+/** 제출 버튼 라벨. 모든 폼 화면이 같은 문구와 진행도를 쓴다. */
+export function nextStepLabel(step: SessionStep): string {
+  const { current, total } = stepProgress(step);
+  return `저장하고 다음 단계로 (${current}/${total})`;
+}
 
 export type SessionLogType =
   | 'session-started'

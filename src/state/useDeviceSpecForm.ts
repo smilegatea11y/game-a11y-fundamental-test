@@ -10,6 +10,7 @@ export const deviceSpecDomId = {
   os: 'dev-os',
   osOther: 'dev-os-other-input',
   screenSize: 'dev-screen',
+  screenModelName: 'dev-screen-model-input',
   resolution: 'dev-resolution',
   resolutionOther: 'dev-resolution-other-input',
   refreshRate: 'dev-refresh',
@@ -17,8 +18,6 @@ export const deviceSpecDomId = {
   inputDeviceOther: 'dev-input-other-input',
   viewingDistance: 'dev-distance',
   audioOutput: 'dev-audio',
-  gameAssistive: 'dev-game-assistive',
-  gameAssistiveNames: 'dev-game-assistive-names-input',
   extraDevice: (id: string) => `dev-extra-${id}`,
   addExtraDevice: 'dev-extra-add',
 } as const;
@@ -60,14 +59,6 @@ export function useDeviceSpecForm(initial: DeviceSpec | null) {
         ? [...prev.inputDevices, device]
         : prev.inputDevices.filter((d) => d !== device),
       inputDeviceOther: !checked && device === 'other' ? '' : prev.inputDeviceOther,
-    }));
-  }, []);
-
-  const setGameAssistiveUse = useCallback((use: DeviceSpec['gameAssistiveUse']) => {
-    setValue((prev) => ({
-      ...prev,
-      gameAssistiveUse: use,
-      gameAssistiveNames: use === 'gameSpecific' ? prev.gameAssistiveNames : '',
     }));
   }, []);
 
@@ -182,23 +173,6 @@ export function useDeviceSpecForm(initial: DeviceSpec | null) {
       });
     }
 
-    if (value.gameAssistiveUse === null) {
-      list.push({
-        key: 'gameAssistiveUse',
-        targetId: firstOptionId(deviceSpecDomId.gameAssistive, 'gameSpecific'),
-        message: C.gameAssistive.missing,
-      });
-    } else if (
-      value.gameAssistiveUse === 'gameSpecific' &&
-      value.gameAssistiveNames.trim() === ''
-    ) {
-      list.push({
-        key: 'gameAssistiveNames',
-        targetId: deviceSpecDomId.gameAssistiveNames,
-        message: C.gameAssistive.namesMissing,
-      });
-    }
-
     /*
      * 부가 기기는 선택 항목이지만, 빈 칸을 남겨두면 CSV 에 빈 행이 실린다.
      * 추가했으면 채우거나 삭제하도록 안내한다.
@@ -231,7 +205,7 @@ export function useDeviceSpecForm(initial: DeviceSpec | null) {
       operatingSystemOther: value.operatingSystemOther.trim(),
       resolutionOther: value.resolutionOther.trim(),
       inputDeviceOther: value.inputDeviceOther.trim(),
-      gameAssistiveNames: value.gameAssistiveNames.trim(),
+      screenModelName: value.screenModelName.trim(),
       extraDevices: value.extraDevices.map((d) => ({ ...d, modelName: d.modelName.trim() })),
     }),
     [value],
@@ -244,7 +218,6 @@ export function useDeviceSpecForm(initial: DeviceSpec | null) {
     setOperatingSystem,
     setResolution,
     toggleInputDevice,
-    setGameAssistiveUse,
     addExtraDevice,
     removeExtraDevice,
     setExtraDeviceName,

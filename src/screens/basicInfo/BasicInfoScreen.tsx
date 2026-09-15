@@ -13,12 +13,14 @@ import {
   DAILY_ASSISTIVE_OPTIONS,
   BASIC_INFO_COPY as C,
   ENROLLMENT_PATH_OPTIONS,
-  GAME_SKILL_OPTIONS,
+  GAME_PLAY_YEARS_OPTIONS,
+  GAME_STYLE_OPTIONS,
   GENDER_OPTIONS,
   GENRE_OPTIONS,
   WEEKLY_PLAYTIME_OPTIONS,
 } from '../../data/basicInfoFields';
 import { PARTICIPANT_ID_EXAMPLE, PARTICIPANT_ID_LENGTH } from '../../lib/participantId';
+import { nextStepLabel } from '../../lib/sessionStore';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { basicInfoDomId as domId, useBasicInfoForm } from '../../state/useBasicInfoForm';
 import type { useSession } from '../../state/useSession';
@@ -163,6 +165,11 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
             id={domId.participantId}
             label={C.participantId.label}
             hint={C.participantId.hint}
+            hintExtra={
+              <>
+                형식 예시: <code>{PARTICIPANT_ID_EXAMPLE}</code>
+              </>
+            }
             value={form.value.participantId}
             onChange={form.setParticipantId}
             onBlur={form.onIdBlur}
@@ -173,9 +180,6 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
             maxLength={PARTICIPANT_ID_LENGTH}
             inputMode="text"
           />
-          <p className="field__hint">
-            형식 예시: <code>{PARTICIPANT_ID_EXAMPLE}</code>
-          </p>
         </section>
 
         <section className="section" aria-labelledby="basic-profile-heading">
@@ -187,7 +191,6 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
             type="radio"
             groupId={domId.gender}
             legend={C.gender.legend}
-            hint={C.gender.hint}
             error={form.errorFor('gender')}
             options={GENDER_OPTIONS}
             selected={form.value.gender === null ? [] : [form.value.gender]}
@@ -196,6 +199,7 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
               <TextField
                 id={domId.genderSelfDescribed}
                 label={C.gender.selfDescribedLabel}
+                labelHidden
                 value={form.value.genderSelfDescribed}
                 onChange={(v) => form.setField('genderSelfDescribed', v)}
               />
@@ -206,7 +210,6 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
             type="radio"
             groupId={domId.ageBracket}
             legend={C.ageBracket.legend}
-            hint={C.ageBracket.hint}
             error={form.errorFor('ageBracket')}
             options={AGE_BRACKET_OPTIONS}
             selected={form.value.ageBracket === null ? [] : [form.value.ageBracket]}
@@ -236,13 +239,22 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
 
           <OptionGroup
             type="radio"
-            groupId={domId.gameSkill}
-            legend={C.gameSkill.legend}
-            hint={C.gameSkill.hint}
-            error={form.errorFor('gameSkill')}
-            options={GAME_SKILL_OPTIONS}
-            selected={form.value.gameSkill === null ? [] : [form.value.gameSkill]}
-            onToggle={(v, checked) => checked && form.setField('gameSkill', v)}
+            groupId={domId.gamePlayYears}
+            legend={C.gamePlayYears.legend}
+            error={form.errorFor('gamePlayYears')}
+            options={GAME_PLAY_YEARS_OPTIONS}
+            selected={form.value.gamePlayYears === null ? [] : [form.value.gamePlayYears]}
+            onToggle={(v, checked) => checked && form.setField('gamePlayYears', v)}
+          />
+
+          <OptionGroup
+            type="radio"
+            groupId={domId.gameStyle}
+            legend={C.gameStyle.legend}
+            error={form.errorFor('gameStyle')}
+            options={GAME_STYLE_OPTIONS}
+            selected={form.value.gameStyle === null ? [] : [form.value.gameStyle]}
+            onToggle={(v, checked) => checked && form.setField('gameStyle', v)}
           />
 
           <OptionGroup
@@ -305,12 +317,22 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
             options={ACCESSIBILITY_FEATURE_OPTIONS}
             selected={form.value.accessibilityFeatures}
             onToggle={form.toggleAccessibilityFeature}
+            renderRevealed={() => (
+              <TextField
+                id={domId.accessibilityFeatureOther}
+                label={C.accessibilityFeatures.otherLabel}
+                value={form.value.accessibilityFeatureOther}
+                onChange={(v) => form.setField('accessibilityFeatureOther', v)}
+                error={form.errorFor('accessibilityFeatureOther')}
+                required
+              />
+            )}
           />
         </section>
 
         <div className="actions">
           <button type="submit" className="btn btn--primary" aria-describedby="basic-submit-hint">
-            저장하고 다음 단계로
+            {nextStepLabel('basicInfo')}
           </button>
           <p className="actions__hint" id="basic-submit-hint">
             {form.isComplete

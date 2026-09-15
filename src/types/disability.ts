@@ -23,7 +23,9 @@ export type DisabilityType =
   | 'liver'
   | 'respiratory'
   | 'ostomy'
-  | 'mental';
+  | 'mental'
+  // 2026-05-01 시행. 23년 만에 추가된 16번째 법정 유형이다.
+  | 'pancreas';
 
 /**
  * 장애 정도.
@@ -55,8 +57,15 @@ export interface DisabilityInfo {
   /** 1단계 — 선택한 법정 유형 (다중) */
   types: DisabilityType[];
 
-  /** 1단계 — 유형별 장애 정도. 선택한 유형에 대해서만 값이 있다. */
-  severityByType: Partial<Record<DisabilityType, DisabilitySeverity>>;
+  /**
+   * 1단계 — 장애 정도. **사람당 하나**다.
+   *
+   * 2019년 장애등급제(1~6급) 폐지 이후 복지카드에는 "장애의 정도가 심한
+   * 장애인 / 심하지 않은 장애인" 두 가지 중 하나만 표기된다. 중복장애도
+   * 합산해 하나의 정도로 판정하므로, 유형마다 따로 묻는 것은 제도와도
+   * 맞지 않고 유형을 여러 개 고른 사람에게 같은 질문을 반복시킨다.
+   */
+  severity: DisabilitySeverity | null;
 
   /**
    * 2단계 — 양상 그룹별로 선택한 세부 양상 코드들.
@@ -81,7 +90,7 @@ export interface DisabilityInfo {
 
 export const EMPTY_DISABILITY_INFO: DisabilityInfo = {
   types: [],
-  severityByType: {},
+  severity: null,
   aspectsByGroup: {},
   aspectOtherByGroup: {},
   aspectSideByKey: {},

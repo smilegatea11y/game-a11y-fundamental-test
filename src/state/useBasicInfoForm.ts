@@ -31,13 +31,15 @@ export const basicInfoDomId = {
   ageBracket: 'basic-age',
   enrollmentPath: 'basic-path',
   enrollmentPathOther: 'basic-path-other-input',
-  gameSkill: 'basic-skill',
+  gamePlayYears: 'basic-play-years',
+  gameStyle: 'basic-play-style',
   genres: 'basic-genres',
   genreOther: 'basic-genres-other-input',
   weeklyPlaytime: 'basic-playtime',
   dailyAssistiveDevice: 'basic-assistive',
   dailyAssistiveDeviceNames: 'basic-assistive-names-input',
   accessibilityFeatures: 'basic-a11y-features',
+  accessibilityFeatureOther: 'basic-a11y-features-other-input',
 } as const;
 
 /** 그룹의 첫 선택지 id — 오류 요약이 라디오/체크박스로 포커스를 옮길 때 쓴다. */
@@ -90,10 +92,14 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
           return {
             ...prev,
             accessibilityFeatures: prev.accessibilityFeatures.filter((f) => f !== feature),
+            // 기타를 해제하면 자유 입력값도 버린다. 남겨두면 CSV 에 유령 값이 실린다.
+            accessibilityFeatureOther:
+              feature === 'other' ? '' : prev.accessibilityFeatureOther,
           };
         }
+        // "사용 안 함"으로 덮어쓸 때도 기타 입력값을 함께 버린다.
         if (EXCLUSIVE_FEATURES.has(feature)) {
-          return { ...prev, accessibilityFeatures: [feature] };
+          return { ...prev, accessibilityFeatures: [feature], accessibilityFeatureOther: '' };
         }
         return {
           ...prev,
@@ -211,11 +217,19 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
       });
     }
 
-    if (value.gameSkill === null) {
+    if (value.gamePlayYears === null) {
       list.push({
-        key: 'gameSkill',
-        targetId: firstOptionId(basicInfoDomId.gameSkill, 'entry'),
-        message: C.gameSkill.missing,
+        key: 'gamePlayYears',
+        targetId: firstOptionId(basicInfoDomId.gamePlayYears, 'under1'),
+        message: C.gamePlayYears.missing,
+      });
+    }
+
+    if (value.gameStyle === null) {
+      list.push({
+        key: 'gameStyle',
+        targetId: firstOptionId(basicInfoDomId.gameStyle, 'casual'),
+        message: C.gameStyle.missing,
       });
     }
 
@@ -255,6 +269,15 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
         targetId: firstOptionId(basicInfoDomId.accessibilityFeatures, 'subtitles'),
         message: C.accessibilityFeatures.missing,
       });
+    } else if (
+      value.accessibilityFeatures.includes('other') &&
+      value.accessibilityFeatureOther.trim() === ''
+    ) {
+      list.push({
+        key: 'accessibilityFeatureOther',
+        targetId: basicInfoDomId.accessibilityFeatureOther,
+        message: C.accessibilityFeatures.otherMissing,
+      });
     }
 
     return list;
@@ -277,6 +300,7 @@ export function useBasicInfoForm(initial: BasicInfo | null) {
       enrollmentPathOther: value.enrollmentPathOther.trim(),
       genreOther: value.genreOther.trim(),
       dailyAssistiveDeviceNames: value.dailyAssistiveDeviceNames.trim(),
+      accessibilityFeatureOther: value.accessibilityFeatureOther.trim(),
     }),
     [value],
   );

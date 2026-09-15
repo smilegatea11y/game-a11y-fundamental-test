@@ -4,7 +4,6 @@ import {
   ASPECT_GROUP_MAP,
   ASPECT_GROUP_ORDER,
   DISABILITY_COPY as C,
-  TYPE_LABEL,
 } from '../data/disabilityFields';
 import { EMPTY_DISABILITY_INFO, sideKey } from '../types/disability';
 import type {
@@ -20,7 +19,7 @@ import type { ConsentValidationError } from '../types/consent';
 export const disabilityDomId = {
   primaryTypes: 'dis-types',
   secondaryTypes: 'dis-types-more',
-  severity: (type: DisabilityType) => `dis-severity-${type}`,
+  severity: 'dis-severity',
   aspects: (group: AspectGroup) => `dis-aspects-${group}`,
   aspectOther: (group: AspectGroup) => `dis-aspects-${group}-other-input`,
   aspectSide: (group: AspectGroup, aspect: string) => `dis-side-${group}-${aspect}`,
@@ -54,9 +53,6 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
     setValue((prev) => {
       const types = checked ? [...prev.types, type] : prev.types.filter((t) => t !== type);
 
-      const severityByType = { ...prev.severityByType };
-      if (!checked) delete severityByType[type];
-
       // 남은 유형들이 여전히 필요로 하는 그룹만 유지한다.
       const stillNeeded = new Set(types.map((t) => ASPECT_GROUP_BY_TYPE[t]));
       const aspectsByGroup: DisabilityInfo['aspectsByGroup'] = {};
@@ -77,15 +73,12 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
         if (stillNeeded.has(group as AspectGroup)) aspectSideByKey[key] = side;
       }
 
-      return { ...prev, types, severityByType, aspectsByGroup, aspectOtherByGroup, aspectSideByKey };
+      return { ...prev, types, aspectsByGroup, aspectOtherByGroup, aspectSideByKey };
     });
   }, []);
 
-  const setSeverity = useCallback((type: DisabilityType, severity: DisabilitySeverity) => {
-    setValue((prev) => ({
-      ...prev,
-      severityByType: { ...prev.severityByType, [type]: severity },
-    }));
+  const setSeverity = useCallback((severity: DisabilitySeverity) => {
+    setValue((prev) => ({ ...prev, severity }));
   }, []);
 
   /** 세부 양상을 켜거나 끈다. 끄면 딸린 자유 입력·좌우 값도 버린다. */
@@ -133,23 +126,21 @@ export function useDisabilityForm(initial: DisabilityInfo | null) {
   const errors = useMemo<ConsentValidationError[]>(() => {
     const list: ConsentValidationError[] = [];
 
-    // 1단계
+    // 1단계 — 정도가 유형보다 위에 있으므로 오류도 그 순서로 담는다.
+    if (value.severity === null) {
+      list.push({
+        key: 'severity',
+        targetId: `${disabilityDomId.severity}-severe`,
+        message: C.step1.severityMissing,
+      });
+    }
+
     if (value.types.length === 0) {
       list.push({
         key: 'types',
         targetId: `${disabilityDomId.primaryTypes}-vision`,
         message: C.step1.typeMissing,
       });
-    }
-
-    for (const type of value.types) {
-      if (value.severityByType[type] === undefined) {
-        list.push({
-          key: `severity-${type}`,
-          targetId: `${disabilityDomId.severity(type)}-severe`,
-          message: C.step1.severityMissing(TYPE_LABEL[type]),
-        });
-      }
     }
 
     // 2단계 — 노출된 그룹마다

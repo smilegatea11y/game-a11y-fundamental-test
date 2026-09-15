@@ -11,6 +11,7 @@ import {
   OPTIONAL_ITEMS,
   REQUIRED_ITEMS,
 } from '../../data/consentItems';
+import { nextStepLabel } from '../../lib/sessionStore';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { useConsentForm } from '../../state/useConsentForm';
 import type { ConsentAnswers, ConsentRecord } from '../../types/consent';
@@ -195,7 +196,7 @@ export function ConsentScreen({
            * 조건을 항상 알려준다.
            */}
           <button type="submit" className="btn btn--primary" aria-describedby="submit-hint">
-            동의하고 참여자 정보 입력으로
+            {nextStepLabel('consent')}
           </button>
           <p className="actions__hint" id="submit-hint">
             {submitHint}
