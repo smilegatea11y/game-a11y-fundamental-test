@@ -3,8 +3,8 @@ import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { LiveRegion } from '../../components/a11y/LiveRegion';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
-import { StepBackButton } from '../../components/dev/StepBackButton';
 import { OptionGroup } from '../../components/ui/OptionGroup';
+import { StepBackButton } from '../../components/ui/StepBackButton';
 import { TextField } from '../../components/ui/TextField';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
@@ -21,6 +21,7 @@ import {
 } from '../../data/basicInfoFields';
 import { PARTICIPANT_ID_EXAMPLE, PARTICIPANT_ID_LENGTH } from '../../lib/participantId';
 import { nextStepLabel } from '../../lib/sessionStore';
+import { useErrorFocus } from '../../lib/useErrorFocus';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { basicInfoDomId as domId, useBasicInfoForm } from '../../state/useBasicInfoForm';
 import type { useSession } from '../../state/useSession';
@@ -69,11 +70,8 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
    * 백그라운드이거나 렌더링이 스로틀되면 실행되지 않아, 스크린리더 사용자가
    * 제출 실패 피드백을 전혀 받지 못한다. (실측으로 확인된 문제)
    */
-  useEffect(() => {
-    if (failedSubmitCount === 0) return;
-    errorSummaryRef.current?.focus();
-    errorSummaryRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
-  }, [failedSubmitCount]);
+  // 첫 미입력 항목으로 스크롤 + 포커스. 요약은 화면에 그대로 남는다.
+  useErrorFocus(failedSubmitCount, form.errors, errorSummaryRef);
 
   /* 조건부 입력란이 나타난 사실을 알린다. 포커스는 빼앗지 않는다. */
   const revealed = useRef({
@@ -154,6 +152,7 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
         <ErrorSummary
           ref={errorSummaryRef}
           errors={form.submitAttempted ? form.errors : []}
+          title="기본정보 입력을 완료할 수 없습니다"
           headingId="basic-error-summary-heading"
         />
 
@@ -339,7 +338,6 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
               ? '입력이 모두 끝났습니다. 장애 정보 입력 화면으로 이동합니다.'
               : `아직 입력하지 않은 항목이 ${form.errors.length}건 있습니다.`}
           </p>
-          {/* 개발용 — src/devFlags.ts 와 함께 삭제한다. */}
           <StepBackButton session={session} to="consent" />
         </div>
       </form>

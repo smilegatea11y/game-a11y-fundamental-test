@@ -1,5 +1,5 @@
 import { SaveStatus } from '../components/a11y/SaveStatus';
-import { StepBackButton } from '../components/dev/StepBackButton';
+import { StepBackButton } from '../components/ui/StepBackButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { SUBMISSION_INFO } from '../data/consentItems';
 import { ASPECT_GROUP_MAP, TYPE_LABEL } from '../data/disabilityFields';
@@ -38,7 +38,7 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
   const { draft, log, saveState, saveError, reset } = session;
 
   const stepNumber = STEP_ORDER.indexOf(step) + 1;
-  // 개발용 뒤로 가기 목적지. src/devFlags.ts 와 함께 삭제한다.
+  // 한 단계 뒤. 동의 화면(index 0)으로는 여기서 돌아가지 않는다.
   const previousStep = STEP_ORDER[STEP_ORDER.indexOf(step) - 1] ?? null;
   const basicInfo = draft?.basicInfo ?? null;
   const disability = draft?.disability ?? null;
@@ -268,7 +268,23 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
       </section>
 
       <div className="actions">
-        <button type="button" className="btn btn--secondary" onClick={reset}>
+        {/*
+          되돌릴 수 없는 동작이라 확인을 한 번 받는다. 확인 없이 지우면
+          잘못 눌렀을 때 30분 넘게 입력한 내용이 그 자리에서 사라진다.
+        */}
+        <button
+          type="button"
+          className="btn btn--secondary"
+          onClick={() => {
+            if (
+              window.confirm(
+                '저장된 동의와 입력, 진행 기록을 모두 지우고 1단계로 돌아갑니다. 되돌릴 수 없습니다. 계속하시겠습니까?',
+              )
+            ) {
+              reset();
+            }
+          }}
+        >
           진행 기록 초기화 (개발용)
         </button>
         <p className="actions__hint">

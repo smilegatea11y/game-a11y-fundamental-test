@@ -3,8 +3,8 @@ import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { LiveRegion } from '../../components/a11y/LiveRegion';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
-import { StepBackButton } from '../../components/dev/StepBackButton';
 import { OptionGroup } from '../../components/ui/OptionGroup';
+import { StepBackButton } from '../../components/ui/StepBackButton';
 import { TextField } from '../../components/ui/TextField';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import {
@@ -18,6 +18,7 @@ import {
   VIEWING_DISTANCE_OPTIONS,
 } from '../../data/deviceSpecFields';
 import { nextStepLabel } from '../../lib/sessionStore';
+import { useErrorFocus } from '../../lib/useErrorFocus';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { deviceSpecDomId as domId, useDeviceSpecForm } from '../../state/useDeviceSpecForm';
 import type { useSession } from '../../state/useSession';
@@ -58,11 +59,8 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
    * 포커스 이동을 requestAnimationFrame 에 의존하지 않는다. rAF 는 탭이
    * 백그라운드이거나 렌더링이 스로틀되면 실행되지 않는다. (실측으로 확인된 문제)
    */
-  useEffect(() => {
-    if (failedSubmitCount === 0) return;
-    errorSummaryRef.current?.focus();
-    errorSummaryRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
-  }, [failedSubmitCount]);
+  // 첫 미입력 항목으로 스크롤 + 포커스. 요약은 화면에 그대로 남는다.
+  useErrorFocus(failedSubmitCount, form.errors, errorSummaryRef);
 
   /*
    * 부가 기기를 추가한 직후 새 입력란으로 포커스를 옮긴다.
@@ -128,6 +126,7 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
         <ErrorSummary
           ref={errorSummaryRef}
           errors={form.submitAttempted ? form.errors : []}
+          title="기기 사양 입력을 완료할 수 없습니다"
           headingId="dev-error-summary-heading"
         />
 
@@ -305,7 +304,6 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
           <p className="actions__hint" id="dev-submit-hint">
             {form.isComplete ? C.submitHint.ready : C.submitHint.remaining(form.errors.length)}
           </p>
-          {/* 개발용 — src/devFlags.ts 와 함께 삭제한다. */}
           <StepBackButton session={session} to="disability" />
         </div>
       </form>

@@ -1,9 +1,9 @@
-import { STEP_BACK_NAV } from './devFlags';
 import { BasicInfoScreen } from './screens/basicInfo/BasicInfoScreen';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
 import { DeviceSpecScreen } from './screens/deviceSpec/DeviceSpecScreen';
 import { DisabilityScreen } from './screens/disability/DisabilityScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
+import { useStepHistory } from './lib/useStepHistory';
 import { useSession } from './state/useSession';
 
 /**
@@ -27,6 +27,12 @@ export function App() {
   const session = useSession();
   const step = session.draft?.currentStep ?? 'consent';
 
+  /*
+   * 브라우저 뒤로 가기를 단계 뒤로 가기로 연결한다. 없으면 뒤로 가기가
+   * 앱을 벗어나 버린다. 동의 기록이 없는 상태에서는 되돌릴 단계가 없다.
+   */
+  useStepHistory(step, session.enterStep);
+
   const renderScreen = () => {
     // 동의 기록이 없으면 어떤 단계가 저장돼 있든 동의 화면으로 되돌린다.
     if (session.consent === null) {
@@ -46,8 +52,10 @@ export function App() {
     switch (step) {
       case 'consent':
         /*
-         * 개발용 뒤로 가기(src/devFlags.ts)로 동의 화면에 되돌아온 경우.
-         * 저장된 동의를 그대로 유지하고 체크박스도 체크된 상태로 보여준다.
+         * "이전 단계로"(또는 브라우저 뒤로 가기)로 동의 화면에 되돌아온 경우.
+         * 저장된 동의를 그대로 유지하고, 동의하신 내용을 체크된 상태로 보여준다.
+         * 이 화면은 동의를 새로 받는 자리가 아니라 이미 남긴 기록을 확인하는
+         * 자리이므로, ConsentScreen 이 그 사실을 문구로 밝힌다.
          *
          * grantConsent 를 다시 쓰면 안 된다 — 그 안의 startSession() 이 세션을
          * 새로 만들어 기본정보·장애정보·기기사양이 전부 지워진다. save() 로 패치한다.
@@ -56,7 +64,7 @@ export function App() {
          * 항목 구성은 되돌아오기 전과 반드시 같다 — 새로 동의한 것이 아니라
          * 지나가는 것이고, 법적으로 의미 있는 시각은 최초 동의 시각이다.
          */
-        if (STEP_BACK_NAV && session.consent !== null) {
+        {
           const grantedAt = session.consent.agreedAt;
           return (
             <ConsentScreen
@@ -68,18 +76,13 @@ export function App() {
                   {
                     type: 'consent-granted',
                     step: 'consent',
-                    detail: '개발용 뒤로 가기 후 재확인',
+                    detail: '뒤로 가기 후 동의 내용 재확인',
                   },
                 )
               }
             />
           );
         }
-        /*
-         * 플래그가 꺼져 있을 때의 기존 동작: 저장된 단계가 consent 여도
-         * (구버전 초안, 수동 편집 등) 자리표시 화면에 갇히지 않게 기본정보로 보낸다.
-         */
-        return basicInfoScreen;
       case 'basicInfo':
         return basicInfoScreen;
       case 'disability':

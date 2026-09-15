@@ -103,6 +103,16 @@
   background: var(--color-surface);
 }
 
+/* 이미 동의한 내용을 확인하는 안내 — 완료를 뜻하므로 네온 초록을 쓴다. */
+.notice--done {
+  border-color: var(--color-success);
+  border-width: var(--border-width-strong);
+}
+
+.notice__body {
+  color: var(--color-text);
+}
+
 /* 데이터 전달 경로 고지 — 일반 안내문과 구분되게 핫핑크로 강조한다. */
 .notice--flow {
   border-color: var(--color-accent);

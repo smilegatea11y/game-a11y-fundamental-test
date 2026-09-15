@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
@@ -12,6 +12,7 @@ import {
   REQUIRED_ITEMS,
 } from '../../data/consentItems';
 import { nextStepLabel } from '../../lib/sessionStore';
+import { useErrorFocus } from '../../lib/useErrorFocus';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { useConsentForm } from '../../state/useConsentForm';
 import type { ConsentAnswers, ConsentRecord } from '../../types/consent';
@@ -26,8 +27,9 @@ interface ConsentScreenProps {
    */
   storageAvailable: boolean;
   /**
-   * 체크박스의 초기 상태. **개발용 뒤로 가기**(src/devFlags.ts)로 이 화면에
-   * 다시 들어왔을 때만 넘어온다. 정상 진입은 undefined 라 빈 상태로 시작한다.
+   * 체크박스의 초기 상태. **뒤로 가기로 이 화면에 다시 들어왔을 때만** 넘어온다.
+   * 처음 진입은 undefined 라 빈 상태로 시작한다.
+   * 값이 있으면 "이미 동의하셨습니다" 안내를 함께 띄운다.
    */
   initialAnswers?: ConsentAnswers;
 }
@@ -59,11 +61,8 @@ export function ConsentScreen({
    */
   const [failedSubmitCount, setFailedSubmitCount] = useState(0);
 
-  useEffect(() => {
-    if (failedSubmitCount === 0) return;
-    errorSummaryRef.current?.focus();
-    errorSummaryRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
-  }, [failedSubmitCount]);
+  // 첫 미입력 항목으로 스크롤 + 포커스. 요약은 화면에 그대로 남는다.
+  useErrorFocus(failedSubmitCount, form.errors, errorSummaryRef);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,6 +90,27 @@ export function ConsentScreen({
       <h1 className="page__title" ref={headingRef} tabIndex={-1}>
         개인정보 수집·이용 동의
       </h1>
+
+      {/*
+        뒤로 가기로 되돌아온 경우. 이 화면은 동의를 새로 받는 자리가 아니라
+        이미 남긴 기록을 확인하는 자리라는 사실을 밝힌다.
+
+        밝히지 않으면 체크박스가 미리 체크된 동의서로 보인다. 그건 실제
+        수집에서 허용되지 않는 형태이고(동의는 참여자가 직접 체크하는 행위여야
+        한다), 감사에서도 지적될 모양새다. 기록 확인임을 명시하면 그 오해가 없다.
+      */}
+      {initialAnswers !== undefined ? (
+        <section className="notice notice--done" aria-labelledby="consent-revisit-heading">
+          <h2 className="notice__heading" id="consent-revisit-heading">
+            <span aria-hidden="true">✓ </span>
+            이미 동의를 마치셨습니다
+          </h2>
+          <p className="notice__body">
+            아래는 동의하신 내용입니다. 동의 일시는 처음 동의하신 시점으로 유지되며, 다시 제출하셔도
+            바뀌지 않습니다. 내용을 확인하신 뒤 아래 버튼으로 다음 단계로 이동하세요.
+          </p>
+        </section>
+      ) : null}
 
       {/* 읽기 시작 전에 바꿀 수 있어야 하므로 본문 맨 앞에 둔다. */}
       <ThemeToggle />
@@ -132,6 +152,7 @@ export function ConsentScreen({
         <ErrorSummary
           ref={errorSummaryRef}
           errors={form.submitAttempted ? form.errors : []}
+          title="동의를 완료할 수 없습니다"
           headingId="error-summary-heading"
         />
 

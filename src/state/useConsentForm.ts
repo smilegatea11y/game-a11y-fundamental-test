@@ -17,9 +17,9 @@ export const domId = {
 const EMPTY_ANSWERS: ConsentAnswers = { A: false, B: false, C: false, E: false };
 
 /**
- * initialAnswers 는 **개발용 뒤로 가기**로 되돌아온 경우에만 넘어온다
- * (src/devFlags.ts 의 STEP_BACK_NAV). 정상 경로는 인자가 없어 빈 상태로 시작한다 —
- * 동의 체크박스가 미리 체크된 채로 나타나면 안 되기 때문이다.
+ * initialAnswers 는 **뒤로 가기로 이 화면에 되돌아온 경우에만** 넘어온다.
+ * 처음 진입은 인자가 없어 빈 상태로 시작한다 — 동의를 처음 받는 자리에서
+ * 체크박스가 미리 체크된 채로 나타나면 안 되기 때문이다.
  */
 export function useConsentForm(initialAnswers?: ConsentAnswers) {
   const [answers, setAnswers] = useState<ConsentAnswers>(initialAnswers ?? EMPTY_ANSWERS);
