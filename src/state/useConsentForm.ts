@@ -16,8 +16,13 @@ export const domId = {
 
 const EMPTY_ANSWERS: ConsentAnswers = { A: false, B: false, C: false, E: false };
 
-export function useConsentForm() {
-  const [answers, setAnswers] = useState<ConsentAnswers>(EMPTY_ANSWERS);
+/**
+ * initialAnswers 는 **개발용 뒤로 가기**로 되돌아온 경우에만 넘어온다
+ * (src/devFlags.ts 의 STEP_BACK_NAV). 정상 경로는 인자가 없어 빈 상태로 시작한다 —
+ * 동의 체크박스가 미리 체크된 채로 나타나면 안 되기 때문이다.
+ */
+export function useConsentForm(initialAnswers?: ConsentAnswers) {
+  const [answers, setAnswers] = useState<ConsentAnswers>(initialAnswers ?? EMPTY_ANSWERS);
 
   /**
    * 제출을 시도한 적이 있는지. 오류 메시지는 제출 이후에만 보여준다.

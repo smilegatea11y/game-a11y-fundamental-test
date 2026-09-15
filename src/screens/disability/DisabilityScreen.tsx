@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { LiveRegion } from '../../components/a11y/LiveRegion';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
+import { StepBackButton } from '../../components/dev/StepBackButton';
 import { OptionGroup } from '../../components/ui/OptionGroup';
 import { TextArea } from '../../components/ui/TextArea';
 import { TextField } from '../../components/ui/TextField';
@@ -291,6 +292,8 @@ export function DisabilityScreen({ session, onComplete }: DisabilityScreenProps)
               ? C.submitHint.ready
               : C.submitHint.remaining(form.errors.length)}
           </p>
+          {/* 개발용 — src/devFlags.ts 와 함께 삭제한다. */}
+          <StepBackButton session={session} to="basicInfo" />
         </div>
       </form>
     </main>

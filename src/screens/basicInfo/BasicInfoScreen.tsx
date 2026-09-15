@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { LiveRegion } from '../../components/a11y/LiveRegion';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
+import { StepBackButton } from '../../components/dev/StepBackButton';
 import { OptionGroup } from '../../components/ui/OptionGroup';
 import { TextField } from '../../components/ui/TextField';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
@@ -316,6 +317,8 @@ export function BasicInfoScreen({ session, onComplete }: BasicInfoScreenProps) {
               ? '입력이 모두 끝났습니다. 장애 정보 입력 화면으로 이동합니다.'
               : `아직 입력하지 않은 항목이 ${form.errors.length}건 있습니다.`}
           </p>
+          {/* 개발용 — src/devFlags.ts 와 함께 삭제한다. */}
+          <StepBackButton session={session} to="consent" />
         </div>
       </form>
     </main>

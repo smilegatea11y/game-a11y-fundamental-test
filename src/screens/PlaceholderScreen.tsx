@@ -1,4 +1,5 @@
 import { SaveStatus } from '../components/a11y/SaveStatus';
+import { StepBackButton } from '../components/dev/StepBackButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { SUBMISSION_INFO } from '../data/consentItems';
 import { TYPE_LABEL } from '../data/disabilityFields';
@@ -37,6 +38,8 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
   const { draft, log, saveState, saveError, reset } = session;
 
   const stepNumber = STEP_ORDER.indexOf(step) + 1;
+  // 개발용 뒤로 가기 목적지. src/devFlags.ts 와 함께 삭제한다.
+  const previousStep = STEP_ORDER[STEP_ORDER.indexOf(step) - 1] ?? null;
   const basicInfo = draft?.basicInfo ?? null;
   const disability = draft?.disability ?? null;
   const deviceSpec = draft?.deviceSpec ?? null;
@@ -244,6 +247,7 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
           저장된 동의와 입력, 진행 로그를 지우고 1단계 동의 화면으로 돌아갑니다. 개발·검증 중에만
           사용합니다.
         </p>
+        {previousStep !== null ? <StepBackButton session={session} to={previousStep} /> : null}
       </div>
     </main>
   );

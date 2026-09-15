@@ -13,7 +13,7 @@ import {
 } from '../../data/consentItems';
 import { useScreenSetup } from '../../lib/useScreenSetup';
 import { useConsentForm } from '../../state/useConsentForm';
-import type { ConsentRecord } from '../../types/consent';
+import type { ConsentAnswers, ConsentRecord } from '../../types/consent';
 import { ConsentItem } from './ConsentItem';
 import './consent.css';
 
@@ -24,11 +24,25 @@ interface ConsentScreenProps {
    * false 면 시작 전에 알려야 한다 — 측정을 다 끝낸 뒤에 유실을 알게 되면 안 된다.
    */
   storageAvailable: boolean;
+  /**
+   * 체크박스의 초기 상태. **개발용 뒤로 가기**(src/devFlags.ts)로 이 화면에
+   * 다시 들어왔을 때만 넘어온다. 정상 진입은 undefined 라 빈 상태로 시작한다.
+   */
+  initialAnswers?: ConsentAnswers;
 }
 
-export function ConsentScreen({ onComplete, storageAvailable }: ConsentScreenProps) {
-  const headingRef = useScreenSetup('개인정보 수집·이용 동의', false);
-  const form = useConsentForm();
+export function ConsentScreen({
+  onComplete,
+  storageAvailable,
+  initialAnswers,
+}: ConsentScreenProps) {
+  /*
+   * 첫 진입에는 포커스를 빼앗지 않는다(읽기부터 시작하는 화면이다).
+   * 다만 뒤로 가기로 되돌아온 경우에는 눌렀던 버튼이 사라지면서 포커스가
+   * body 로 튕기므로, 그때는 제목으로 옮겨 위치를 알려준다.
+   */
+  const headingRef = useScreenSetup('개인정보 수집·이용 동의', initialAnswers !== undefined);
+  const form = useConsentForm(initialAnswers);
   const errorSummaryRef = useRef<HTMLDivElement>(null);
 
   /**

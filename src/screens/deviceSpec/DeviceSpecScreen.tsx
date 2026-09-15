@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { ErrorSummary } from '../../components/a11y/ErrorSummary';
 import { LiveRegion } from '../../components/a11y/LiveRegion';
 import { SaveStatus } from '../../components/a11y/SaveStatus';
+import { StepBackButton } from '../../components/dev/StepBackButton';
 import { OptionGroup } from '../../components/ui/OptionGroup';
 import { TextField } from '../../components/ui/TextField';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
@@ -350,6 +351,8 @@ export function DeviceSpecScreen({ session, onComplete }: DeviceSpecScreenProps)
           <p className="actions__hint" id="dev-submit-hint">
             {form.isComplete ? C.submitHint.ready : C.submitHint.remaining(form.errors.length)}
           </p>
+          {/* 개발용 — src/devFlags.ts 와 함께 삭제한다. */}
+          <StepBackButton session={session} to="disability" />
         </div>
       </form>
     </main>

@@ -1,3 +1,4 @@
+import { STEP_BACK_NAV } from './devFlags';
 import { BasicInfoScreen } from './screens/basicInfo/BasicInfoScreen';
 import { ConsentScreen } from './screens/consent/ConsentScreen';
 import { DeviceSpecScreen } from './screens/deviceSpec/DeviceSpecScreen';
@@ -37,16 +38,50 @@ export function App() {
       );
     }
 
+    // consent 와 basicInfo 두 갈래가 같은 화면을 반환하므로 한 번만 만든다.
+    const basicInfoScreen = (
+      <BasicInfoScreen session={session} onComplete={() => session.enterStep('disability')} />
+    );
+
     switch (step) {
-      /*
-       * 동의는 끝났는데 저장된 단계가 'consent' 인 경우(구버전 초안, 수동 편집 등)
-       * 자리표시 화면에 갇히지 않게 기본정보로 보낸다.
-       */
       case 'consent':
+        /*
+         * 개발용 뒤로 가기(src/devFlags.ts)로 동의 화면에 되돌아온 경우.
+         * 저장된 동의를 그대로 유지하고 체크박스도 체크된 상태로 보여준다.
+         *
+         * grantConsent 를 다시 쓰면 안 된다 — 그 안의 startSession() 이 세션을
+         * 새로 만들어 기본정보·장애정보·기기사양이 전부 지워진다. save() 로 패치한다.
+         *
+         * agreedAt 은 처음 값을 유지한다. 필수 4건을 모두 체크해야만 제출되므로
+         * 항목 구성은 되돌아오기 전과 반드시 같다 — 새로 동의한 것이 아니라
+         * 지나가는 것이고, 법적으로 의미 있는 시각은 최초 동의 시각이다.
+         */
+        if (STEP_BACK_NAV && session.consent !== null) {
+          const grantedAt = session.consent.agreedAt;
+          return (
+            <ConsentScreen
+              initialAnswers={session.consent.items}
+              storageAvailable={session.storageAvailable}
+              onComplete={(record) =>
+                session.save(
+                  { consent: { ...record, agreedAt: grantedAt }, currentStep: 'basicInfo' },
+                  {
+                    type: 'consent-granted',
+                    step: 'consent',
+                    detail: '개발용 뒤로 가기 후 재확인',
+                  },
+                )
+              }
+            />
+          );
+        }
+        /*
+         * 플래그가 꺼져 있을 때의 기존 동작: 저장된 단계가 consent 여도
+         * (구버전 초안, 수동 편집 등) 자리표시 화면에 갇히지 않게 기본정보로 보낸다.
+         */
+        return basicInfoScreen;
       case 'basicInfo':
-        return (
-          <BasicInfoScreen session={session} onComplete={() => session.enterStep('disability')} />
-        );
+        return basicInfoScreen;
       case 'disability':
         return <DisabilityScreen session={session} onComplete={() => session.enterStep('device')} />;
       case 'device':
