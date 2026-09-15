@@ -115,7 +115,7 @@ export function PlaceholderScreen({ step, session }: PlaceholderScreenProps) {
                     {disability.registration === 'registered'
                       ? '등록 장애인'
                       : disability.registration === 'unregistered'
-                        ? '해당 없음 (미등록)'
+                        ? '미등록 (접근성 문제 있음)'
                         : '(미입력)'}
                   </dd>
                 </div>
